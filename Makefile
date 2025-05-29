@@ -1,4 +1,4 @@
-.PHONY: build run test clean docker-build docker-up docker-down dev prod go-mod-tidy db-setup db-reset swagger deps
+.PHONY: build run test clean docker-build docker-up docker-down dev prod go-mod-tidy db-setup db-setup-docker db-reset db-reset-docker swagger deps
 
 # Build the application
 build:
@@ -77,6 +77,15 @@ db-reset:
 	@echo "Setting up fresh database..."
 	@make db-setup
 
+# Reset database (with Docker)
+db-reset-docker:
+	@echo "Resetting database in Docker..."
+	@docker-compose exec postgres psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'jeki';" || true
+	@docker-compose exec postgres psql -U postgres -c "DROP DATABASE IF EXISTS jeki;"
+	@docker-compose exec postgres psql -U postgres -c "CREATE DATABASE jeki;"
+	@docker-compose exec postgres psql -U postgres jeki -f /docker-entrypoint-initdb.d/init.sql
+	@echo "Database has been reset successfully!"
+
 # Generate Swagger docs
 swagger:
 	swag init -g cmd/api/main.go -o api/swagger
@@ -90,3 +99,19 @@ go-mod-tidy:
 	@echo "Tidying up Go module dependencies..."
 	@go mod tidy
 	@echo "Dependencies have been tidied up successfully!"
+
+# Setup database (with Docker)
+db-setup-docker:
+	@echo "Setting up database in Docker..."
+	@docker-compose exec postgres psql -U postgres -c "CREATE DATABASE jeki;" || true
+	@docker-compose exec postgres psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE jeki TO postgres;"
+	@docker-compose exec postgres psql -U postgres jeki -f /docker-entrypoint-initdb.d/init.sql
+	@echo "Database setup completed successfully!"
+	@echo "\nTo connect to the database in Docker, use:"
+	@echo "docker-compose exec postgres psql -U postgres jeki"
+	@echo "\nOr to connect to psql first:"
+	@echo "docker-compose exec postgres psql -U postgres"
+	@echo "Then in psql, you can use:"
+	@echo "\\c jeki    # to connect to jeki database"
+	@echo "\\dt        # to list tables"
+	@echo "\\q         # to quit psql"

@@ -322,8 +322,10 @@ make docker-down # Stop Docker containers (data tetap ada)
 make docker-down-volumes # Stop containers dan hapus semua data
 
 # Database
-make db-setup    # Setup database
-make db-reset    # Reset database
+make db-setup    # Setup database (untuk local setup)
+make db-setup-docker # Setup database (untuk Docker setup)
+make db-reset    # Reset database (untuk local setup)
+make db-reset-docker # Reset database (untuk Docker setup)
 
 # Development tools
 make test        # Run tests
@@ -393,6 +395,58 @@ source ~/.zshrc
 echo 'export PATH="/usr/lib/postgresql/15/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
+
+#### Accessing Database in Docker
+
+When using Docker, you can access the database in several ways:
+
+1. **Using psql inside Docker container**:
+   ```bash
+   # Connect directly to jeki database
+   docker-compose exec postgres psql -U postgres jeki
+
+   # Or connect to postgres first
+   docker-compose exec postgres psql -U postgres
+   ```
+
+2. **Using GUI Tools**:
+   - **pgAdmin**:
+     - Host: localhost
+     - Port: 5432
+     - Database: jeki
+     - Username: postgres
+     - Password: postgres
+
+   - **DBeaver**:
+     - Host: localhost
+     - Port: 5432
+     - Database: jeki
+     - Username: postgres
+     - Password: postgres
+
+3. **Common psql commands** (when connected):
+   ```sql
+   \l          # List databases
+   \c jeki     # Connect to jeki database
+   \dt         # List tables
+   \d users    # Describe users table
+   \q          # Quit psql
+   ```
+
+4. **Database Management Commands**:
+   ```bash
+   # Setup database
+   make db-setup-docker
+
+   # Reset database
+   make db-reset-docker
+
+   # Backup database
+   docker-compose exec postgres pg_dump -U postgres jeki > backup.sql
+
+   # Restore database
+   docker-compose exec -T postgres psql -U postgres jeki < backup.sql
+   ```
 
 #### Local Database Setup
 
@@ -550,4 +604,136 @@ Berikut adalah saran pengembangan untuk masa depan:
     - Dokumentasikan deployment process
     - Tambahkan troubleshooting guide
 
-Implementasikan saran-saran di atas secara bertahap sesuai kebutuhan dan prioritas.
+## Troubleshooting
+
+### Common Issues and Solutions
+
+1. **Port Conflicts**:
+   ```bash
+   # If port 8080 is already in use
+   lsof -i :8080
+   kill -9 <PID>
+   ```
+
+2. **Database Connection Issues**:
+   - **Local Setup**:
+     ```bash
+     # Check if PostgreSQL is running
+     brew services list | grep postgresql
+     # Start if not running
+     brew services start postgresql@15
+     ```
+   - **Docker Setup**:
+     ```bash
+     # Check container status
+     docker-compose ps
+     # Restart containers
+     docker-compose down
+     docker-compose up -d
+     ```
+
+3. **Docker Issues**:
+   ```bash
+   # Clean up Docker resources
+   docker system prune
+   # Remove all containers and volumes
+   docker-compose down -v
+   ```
+
+4. **Go Module Issues**:
+   ```bash
+   # Clean module cache
+   go clean -modcache
+   # Update dependencies
+   make go-mod-tidy
+   ```
+
+## Development Guidelines
+
+### Code Structure
+- Follow the modular monolith architecture
+- Keep business logic in usecase layer
+- Use interfaces for better testability
+- Implement proper error handling
+
+### Git Workflow
+1. Create feature branch from main
+2. Make changes and commit
+3. Write tests if applicable
+4. Create pull request
+5. Get code review
+6. Merge to main
+
+### Testing
+- Write unit tests for business logic
+- Use table-driven tests
+- Mock external dependencies
+- Aim for good test coverage
+
+### Code Style
+- Use `gofmt` for formatting
+- Follow Go best practices
+- Write clear comments
+- Use meaningful variable names
+
+## API Documentation
+
+### Swagger UI
+Access the API documentation at:
+- Development: http://localhost:8081
+- Production: https://api.jeki.com/docs
+
+### Available Endpoints
+1. **Health Check**:
+   - GET `/ping`
+   - Response: `{"message": "pong"}`
+
+2. **User Management**:
+   - POST `/api/v1/users` - Create user
+   - GET `/api/v1/users` - List users
+   - GET `/api/v1/users/:id` - Get user details
+   - PUT `/api/v1/users/:id` - Update user
+   - DELETE `/api/v1/users/:id` - Delete user
+
+### API Versioning
+- Current version: v1
+- Version prefix: `/api/v1/`
+- Future versions will use `/api/v2/`, etc.
+
+## Environment Variables
+
+### Required Variables
+```env
+# Environment (dev, sit, uat, production)
+ENVIRONMENT=dev
+
+# Server Configuration
+SERVER_PORT=8080
+
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_NAME=jeki
+```
+
+### Optional Variables
+```env
+# Logging
+LOG_LEVEL=debug  # debug, info, warn, error
+LOG_FORMAT=json  # json, text
+
+# Security
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRY=24h
+
+# Rate Limiting
+RATE_LIMIT=100
+RATE_WINDOW=1m
+```
+
+### Environment File Priority
+1. `.env.{environment}` (e.g., `.env.dev`)
+2. `.env`
+3. System environment variables
