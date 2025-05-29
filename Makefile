@@ -1,4 +1,4 @@
-.PHONY: build run test clean docker-build docker-up docker-down dev prod
+.PHONY: build run test clean docker-build docker-up docker-down dev prod go-mod-tidy db-setup db-reset swagger deps
 
 # Build the application
 build:
@@ -84,3 +84,9 @@ swagger:
 # Install dependencies
 deps:
 	go mod download
+
+# Tidy up Go module dependencies
+go-mod-tidy:
+	@echo "Tidying up Go module dependencies..."
+	@go mod tidy
+	@echo "Dependencies have been tidied up successfully!"

@@ -3,10 +3,11 @@ package v1
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/tyobaskara/jeki-backend/internal/modules/user/handler"
 )
 
 // SetupRouter configures the router with all routes
-func SetupRouter() *gin.Engine {
+func SetupRouter(userHandler *handler.UserHandler) *gin.Engine {
 	router := gin.Default()
 
 	// Health check
@@ -14,16 +15,8 @@ func SetupRouter() *gin.Engine {
 		c.JSON(200, gin.H{"message": "pong"})
 	})
 
-	// API v1 routes
-	v1 := router.Group("/v1")
-	{
-		// User routes
-		v1.GET("/users", GetUsers)
-		v1.GET("/users/:id", GetUser)
-		v1.POST("/users", CreateUser)
-		v1.PUT("/users/:id", UpdateUser)
-		v1.DELETE("/users/:id", DeleteUser)
-	}
+	// Register user routes
+	userHandler.RegisterRoutes(router)
 
 	return router
 }
