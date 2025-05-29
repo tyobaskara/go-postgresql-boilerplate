@@ -1,6 +1,6 @@
-# go-postgresql-boilerplate
+# Jeki Backend
 
-Backend service for application built with Go.
+Backend service for Jeki application built with Go.
 
 ## Prerequisites
 
@@ -470,3 +470,84 @@ pg_dump -U postgres jeki > backup.sql
 # Restore
 psql -U postgres jeki < backup.sql
 ```
+
+## Future Improvements
+
+Berikut adalah saran pengembangan untuk masa depan:
+
+1. **Testing**:
+   - Tambahkan folder `test` di setiap modul
+   - Implementasikan unit test, integration test, dan e2e test
+   - Gunakan test coverage tools
+
+2. **API Documentation**:
+   - Tambahkan Swagger/OpenAPI documentation
+   - Dokumentasikan setiap endpoint
+   - Tambahkan contoh request/response
+
+3. **Error Handling**:
+   - Buat package `errors` di `pkg/`
+   - Standardisasi error response
+   - Implementasikan error logging
+
+4. **Logging**:
+   - Buat package `logger` di `pkg/`
+   - Standardisasi logging format
+   - Implementasikan log rotation
+
+5. **Monitoring**:
+   - Tambahkan health check endpoint
+   - Implementasikan metrics (Prometheus)
+   - Setup tracing (OpenTelemetry)
+
+6. **Security**:
+   - Implementasikan rate limiting
+   - Setup CORS
+   - Implementasikan security headers
+
+7. **CI/CD**:
+   - Setup GitHub Actions/GitLab CI
+   - Implementasikan automated testing
+   - Setup automated deployment
+
+8. **Containerization**:
+   - Optimize Dockerfile
+   - Setup multi-stage build
+   - Implementasikan health check
+
+9. **Database**:
+   - Implementasikan migrations
+   - Setup database backup
+   - Implementasikan connection pooling
+
+10. **Caching**:
+    - Implementasikan Redis
+    - Setup cache invalidation
+    - Implementasikan cache warming
+
+11. **Message Queue**:
+    - Setup RabbitMQ/Kafka
+    - Implementasikan async processing
+    - Setup dead letter queue
+
+12. **Service Discovery**:
+    - Setup service registry
+    - Implementasikan load balancing
+    - Setup circuit breaker
+
+13. **Configuration Management**:
+    - Implementasikan feature flags
+    - Setup configuration validation
+    - Implementasikan secrets management
+
+14. **Monitoring & Alerting**:
+    - Setup Grafana dashboards
+    - Implementasikan alerting
+    - Setup log aggregation
+
+15. **Documentation**:
+    - Tambahkan API documentation
+    - Dokumentasikan deployment process
+    - Tambahkan troubleshooting guide
+
+Implementasikan saran-saran di atas secara bertahap sesuai kebutuhan dan prioritas.
