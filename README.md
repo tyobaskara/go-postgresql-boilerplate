@@ -1,6 +1,6 @@
-# Jeki Backend
+# go-postgresql-boilerplate
 
-Backend service for Jeki application built with Go.
+Backend service for application built with Go.
 
 ## Prerequisites
 
