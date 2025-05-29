@@ -24,6 +24,7 @@ func (h *UserHandler) RegisterRoutes(router *gin.Engine) {
 	users := router.Group("/api/users")
 	{
 		users.POST("", h.CreateUser)
+		users.GET("", h.GetAllUsers)
 		users.GET("/:id", h.GetUserByID)
 		users.PUT("/:id", h.UpdateUser)
 		users.DELETE("/:id", h.DeleteUser)
@@ -105,4 +106,14 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+// GetAllUsers handles getting all users
+func (h *UserHandler) GetAllUsers(c *gin.Context) {
+	users, err := h.userUsecase.GetAllUsers()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, users)
 } 

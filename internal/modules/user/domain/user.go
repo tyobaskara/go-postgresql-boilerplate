@@ -23,6 +23,7 @@ type UserRepository interface {
 	FindByEmail(email string) (*User, error)
 	Update(user *User) error
 	Delete(id uuid.UUID) error
+	GetAll() ([]*User, error)
 }
 
 // UserUsecase defines the interface for user business logic
@@ -32,4 +33,5 @@ type UserUsecase interface {
 	GetUserByEmail(email string) (*User, error)
 	UpdateUser(user *User) error
 	DeleteUser(id uuid.UUID) error
+	GetAllUsers() ([]*User, error)
 } 

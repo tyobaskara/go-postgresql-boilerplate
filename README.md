@@ -34,6 +34,7 @@ Backend service for Jeki application built with Go.
   - [Future Improvements](#future-improvements)
   - [Troubleshooting](#troubleshooting)
     - [Common Issues and Solutions](#common-issues-and-solutions)
+      - [Database Connection Issues](#database-connection-issues)
   - [Development Guidelines](#development-guidelines)
     - [Code Structure](#code-structure)
     - [Git Workflow](#git-workflow)
@@ -115,7 +116,10 @@ ENVIRONMENT=dev
 SERVER_PORT=8080
 
 # Database Configuration
-DB_HOST=localhost
+# Note: 
+# - If running locally (without Docker): use DB_HOST=localhost
+# - If running with Docker: use DB_HOST=postgres (service name in docker-compose)
+DB_HOST=postgres  # or localhost for local development
 DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres
@@ -149,6 +153,8 @@ This is the recommended approach as it handles all dependencies automatically, i
    - Start the application
    - Start Swagger UI
 
+   Note: When using Docker, make sure your `.env.{environment}` file has `DB_HOST=postgres` as this is the service name in docker-compose.
+
 2. Make your code changes - the application will automatically reload
 
 3. Access Swagger UI at <http://localhost:8081> to test your API endpoints
@@ -173,7 +179,9 @@ sudo systemctl stop postgresql
 
 If you prefer to run the application without Docker, follow these steps:
 
-1. Install and start PostgreSQL:
+1. Make sure your `.env.{environment}` file has `DB_HOST=localhost` since you're running PostgreSQL locally.
+
+2. Install and start PostgreSQL:
 
    ```bash
    # For Mac (using Homebrew)
@@ -186,7 +194,7 @@ If you prefer to run the application without Docker, follow these steps:
    sudo systemctl start postgresql
    ```
 
-2. Initialize the database:
+3. Initialize the database:
 
    ```bash
    # First time setup
@@ -196,7 +204,7 @@ If you prefer to run the application without Docker, follow these steps:
    make db-reset
    ```
 
-3. Run the application:
+4. Run the application:
 
    ```bash
    make run
@@ -668,45 +676,33 @@ Berikut adalah saran pengembangan untuk masa depan:
 
 ### Common Issues and Solutions
 
-1. **Port Conflicts**:
-   ```bash
-   # If port 8080 is already in use
-   lsof -i :8080
-   kill -9 <PID>
-   ```
+#### Database Connection Issues
 
-2. **Database Connection Issues**:
-   - **Local Setup**:
-     ```bash
-     # Check if PostgreSQL is running
-     brew services list | grep postgresql
-     # Start if not running
-     brew services start postgresql@15
-     ```
-   - **Docker Setup**:
-     ```bash
-     # Check container status
-     docker-compose ps
-     # Restart containers
-     docker-compose down
-     docker-compose up -d
-     ```
+1. **Connection Refused Error**
+   - If running with Docker:
+     - Make sure `DB_HOST=postgres` in your `.env.{environment}` file
+     - Check if PostgreSQL container is running: `docker-compose ps`
+     - Check PostgreSQL logs: `docker-compose logs postgres`
+   - If running locally:
+     - Make sure `DB_HOST=localhost` in your `.env.{environment}` file
+     - Check if PostgreSQL is running:
+       ```bash
+       # For Mac
+       brew services list
+       
+       # For Ubuntu/Debian
+       sudo systemctl status postgresql
+       ```
 
-3. **Docker Issues**:
-   ```bash
-   # Clean up Docker resources
-   docker system prune
-   # Remove all containers and volumes
-   docker-compose down -v
-   ```
+2. **Wrong Database Host**
+   - When using Docker: Use `DB_HOST=postgres` (service name in docker-compose)
+   - When running locally: Use `DB_HOST=localhost`
 
-4. **Go Module Issues**:
-   ```bash
-   # Clean module cache
-   go clean -modcache
-   # Update dependencies
-   make go-mod-tidy
-   ```
+3. **Port Conflicts**
+   - If you get port conflict errors, make sure:
+     - No other PostgreSQL instance is running locally
+     - No other application is using port 5432
+     - Docker containers are not conflicting with local services
 
 ## Development Guidelines
 
@@ -771,7 +767,7 @@ ENVIRONMENT=dev
 SERVER_PORT=8080
 
 # Database Configuration
-DB_HOST=localhost
+DB_HOST=postgres  # or localhost for local development
 DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres
@@ -820,7 +816,7 @@ ENVIRONMENT=dev
 SERVER_PORT=8080
 
 # Database Configuration
-DB_HOST=localhost
+DB_HOST=postgres  # or localhost for local development
 DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres

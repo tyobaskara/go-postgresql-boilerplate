@@ -9,8 +9,6 @@ services:
       - "8080:8080"
     volumes:
       - .:/app
-    environment:
-      - ENV=dev
     env_file:
       - .env.${ENV:-dev}
     depends_on:

@@ -102,4 +102,23 @@ func (r *userRepository) Delete(id uuid.UUID) error {
 	`
 	_, err := r.db.Exec(query, id)
 	return err
+}
+
+func (r *userRepository) GetAll() ([]*domain.User, error) {
+	query := `SELECT id, email, name, created_at, updated_at FROM users`
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*domain.User
+	for rows.Next() {
+		user := &domain.User{}
+		if err := rows.Scan(&user.ID, &user.Email, &user.Name, &user.CreatedAt, &user.UpdatedAt); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
 } 
