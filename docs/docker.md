@@ -1,0 +1,172 @@
+# Docker Documentation
+
+This document provides comprehensive information about the Docker setup for the Jeki Backend project.
+
+## Overview
+
+The project uses Docker for containerization and includes multiple services:
+- Main application (Go)
+- PostgreSQL database
+- Swagger UI for API documentation
+
+## Docker Files
+
+### Dockerfile
+The project includes two Dockerfile variants:
+
+1. `Dockerfile` - Production build
+   - Uses multi-stage build to minimize final image size
+   - Based on `golang:1.22-alpine` for building
+   - Final image based on `alpine:3.19`
+   - Exposes port 8080
+
+2. `Dockerfile.dev` - Development build
+   - Optimized for development workflow
+   - Includes hot-reloading capabilities
+
+## Docker Compose
+
+The `docker-compose.yml` file defines three services:
+
+### 1. App Service
+- Builds from either `Dockerfile` or `Dockerfile.dev` (configurable via `DOCKERFILE` env var)
+- Exposes port 8080
+- Mounts the current directory for development
+- Uses environment variables from `.env.{ENV}` file
+- Depends on PostgreSQL service
+
+### 2. PostgreSQL Service
+- Uses `postgres:16-alpine` image
+- Exposes port 5432
+- Environment variables:
+  - `POSTGRES_USER` (default: postgres)
+  - `POSTGRES_PASSWORD` (default: postgres)
+  - `POSTGRES_DB` (default: jeki)
+- Includes health checks
+- Initializes database using `scripts/init.sql`
+
+### 3. Swagger UI Service
+- Uses `swaggerapi/swagger-ui` image
+- Exposes port 8081
+- Mounts Swagger documentation from `docs/swagger`
+
+## Port Mapping and Expose
+
+### Understanding Port Mapping
+
+In Docker, there are two important concepts related to ports:
+1. `EXPOSE` in Dockerfile
+2. Port mapping in docker-compose.yml
+
+#### Port Mapping Format
+```yaml
+ports:
+  - "HOST_PORT:CONTAINER_PORT"
+```
+
+#### Current Port Configuration
+1. **App Service**: `"8080:8080"`
+   - Container port: 8080
+   - Host port: 8080
+   - Access via: `localhost:8080`
+
+2. **PostgreSQL**: `"5432:5432"`
+   - Container port: 5432
+   - Host port: 5432
+   - Access via: `localhost:5432`
+
+3. **Swagger UI**: `"8081:8080"`
+   - Container port: 8080
+   - Host port: 8081
+   - Access via: `localhost:8081`
+
+### Visual Representation
+```
+Host (Your Computer)        Container
++----------------+         +----------------+
+|                |         |                |
+|  localhost:8080| <-----> |  container:8080|  (App)
+|                |         |                |
+|  localhost:5432| <-----> |  container:5432|  (PostgreSQL)
+|                |         |                |
+|  localhost:8081| <-----> |  container:8080|  (Swagger)
+|                |         |                |
++----------------+         +----------------+
+```
+
+### Difference Between EXPOSE and Port Mapping
+
+1. **EXPOSE in Dockerfile**
+   - Only documents that the container will use the specified port
+   - Does not make the port accessible from the host
+   - Acts as documentation for container port usage
+
+2. **Port Mapping in docker-compose.yml**
+   - Makes container ports accessible from the host
+   - Allows changing the host port (e.g., Swagger: 8081:8080)
+   - Enables external access to the application
+
+### Benefits of Port Mapping
+
+1. **Isolation**: Containers run in isolation while remaining accessible
+2. **Flexibility**: Can change host ports without modifying the application
+3. **Security**: Control which ports are exposed to the host
+4. **Development**: Facilitates debugging and testing
+
+## Usage
+
+### Development Environment
+
+1. Start all services:
+```bash
+docker-compose up
+```
+
+2. Start specific services:
+```bash
+docker-compose up app postgres
+```
+
+3. Rebuild services:
+```bash
+docker-compose up --build
+```
+
+### Production Environment
+
+1. Build and run using production Dockerfile:
+```bash
+DOCKERFILE=Dockerfile docker-compose up --build
+```
+
+## Environment Variables
+
+The project uses environment variables for configuration. Create `.env.dev` or `.env.prod` files with the following variables:
+
+```
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
+DB_NAME=your_db_name
+ENV=dev|prod
+```
+
+## Volumes
+
+- `postgres_data`: Persistent PostgreSQL data storage
+- Application code is mounted as a volume in development mode
+
+## Networks
+
+All services are connected through the `jeki-network` bridge network.
+
+## Health Checks
+
+PostgreSQL service includes health checks to ensure the database is ready before the application starts.
+
+## Best Practices
+
+1. Always use the development setup (`Dockerfile.dev`) for local development
+2. Use production setup (`Dockerfile`) for deployment
+3. Keep sensitive information in environment files
+4. Use the provided health checks to ensure service availability
+5. Regularly update base images for security patches 
