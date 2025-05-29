@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -110,7 +111,22 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 // GetAllUsers handles getting all users
 func (h *UserHandler) GetAllUsers(c *gin.Context) {
-	users, err := h.userUsecase.GetAllUsers()
+	page := 1
+	limit := 10
+
+	// Parse query parameters
+	if pageStr := c.Query("page"); pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+	if limitStr := c.Query("limit"); limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	users, err := h.userUsecase.GetAllUsers(page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

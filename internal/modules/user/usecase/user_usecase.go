@@ -36,6 +36,12 @@ func (u *userUsecase) DeleteUser(id uuid.UUID) error {
 	return u.userRepo.Delete(id)
 }
 
-func (u *userUsecase) GetAllUsers() ([]*domain.User, error) {
-	return u.userRepo.GetAll()
+func (u *userUsecase) GetAllUsers(page, limit int) ([]*domain.User, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+	return u.userRepo.GetAll(page, limit)
 }

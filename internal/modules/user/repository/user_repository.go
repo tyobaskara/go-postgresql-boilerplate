@@ -104,9 +104,15 @@ func (r *userRepository) Delete(id uuid.UUID) error {
 	return err
 }
 
-func (r *userRepository) GetAll() ([]*domain.User, error) {
-	query := `SELECT id, email, name, created_at, updated_at FROM users`
-	rows, err := r.db.Query(query)
+func (r *userRepository) GetAll(page, limit int) ([]*domain.User, error) {
+	offset := (page - 1) * limit
+	query := `
+		SELECT id, email, name, created_at, updated_at 
+		FROM users 
+		ORDER BY created_at DESC 
+		LIMIT $1 OFFSET $2
+	`
+	rows, err := r.db.Query(query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
