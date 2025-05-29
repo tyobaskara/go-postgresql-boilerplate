@@ -2,6 +2,53 @@
 
 Backend service for Jeki application built with Go.
 
+## Table of Contents
+- [Jeki Backend](#jeki-backend)
+  - [Table of Contents](#table-of-contents)
+  - [Prerequisites](#prerequisites)
+  - [Project Structure](#project-structure)
+  - [Getting Started](#getting-started)
+    - [1. Environment Setup](#1-environment-setup)
+    - [2. Running the Application](#2-running-the-application)
+      - [Option 1: Using Docker (Recommended)](#option-1-using-docker-recommended)
+      - [Option 2: Running Locally](#option-2-running-locally)
+    - [3. Development Workflow](#3-development-workflow)
+      - [Using Docker (Recommended)](#using-docker-recommended)
+      - [Using Local Setup](#using-local-setup)
+  - [Development](#development)
+    - [Environment Setup](#environment-setup)
+    - [Development Mode (with Hot Reload)](#development-mode-with-hot-reload)
+    - [Production Mode](#production-mode)
+    - [Manual Mode](#manual-mode)
+    - [Environment File Priority](#environment-file-priority)
+    - [Available Make Commands](#available-make-commands)
+    - [Docker Commands](#docker-commands)
+    - [Database Management](#database-management)
+      - [Using Docker](#using-docker)
+      - [Installing PostgreSQL Client Tools](#installing-postgresql-client-tools)
+      - [Accessing Database in Docker](#accessing-database-in-docker)
+      - [Local Database Setup](#local-database-setup)
+      - [Using psql Command Line](#using-psql-command-line)
+      - [Using GUI Tools](#using-gui-tools)
+    - [Database Backup and Restore](#database-backup-and-restore)
+  - [Future Improvements](#future-improvements)
+  - [Troubleshooting](#troubleshooting)
+    - [Common Issues and Solutions](#common-issues-and-solutions)
+  - [Development Guidelines](#development-guidelines)
+    - [Code Structure](#code-structure)
+    - [Git Workflow](#git-workflow)
+    - [Testing](#testing)
+    - [Code Style](#code-style)
+  - [API Documentation](#api-documentation)
+    - [Swagger UI](#swagger-ui)
+    - [Available Endpoints](#available-endpoints)
+    - [API Versioning](#api-versioning)
+  - [Environment Variables](#environment-variables)
+    - [Required Variables](#required-variables)
+    - [Optional Variables](#optional-variables)
+    - [Environment File Priority](#environment-file-priority-1)
+    - [Docker Environment Variables](#docker-environment-variables)
+
 ## Prerequisites
 
 - Go 1.22 or higher
@@ -71,7 +118,7 @@ SERVER_PORT=8080
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
-DB_PASSWORD=your_password
+DB_PASSWORD=postgres
 DB_NAME=jeki
 ```
 
@@ -371,6 +418,20 @@ Note: Using `make docker-down` is safe for development as it preserves your data
 
 ### Database Management
 
+#### Using Docker
+Before running database commands with Docker, make sure to start the containers first:
+
+```bash
+# Start Docker containers
+make docker-up
+
+# Then you can run database commands
+make db-setup-docker  # Setup database
+make db-reset-docker  # Reset database
+```
+
+Note: Always run `make docker-up` before running any database commands that use Docker (`db-setup-docker` or `db-reset-docker`). This ensures that the PostgreSQL container is running and ready to accept connections.
+
 #### Installing PostgreSQL Client Tools
 
 Before using psql or other PostgreSQL client tools, you need to install them:
@@ -603,7 +664,6 @@ Berikut adalah saran pengembangan untuk masa depan:
     - Tambahkan API documentation
     - Dokumentasikan deployment process
     - Tambahkan troubleshooting guide
-
 ## Troubleshooting
 
 ### Common Issues and Solutions
@@ -714,8 +774,13 @@ SERVER_PORT=8080
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
-DB_PASSWORD=your_password
+DB_PASSWORD=postgres
 DB_NAME=jeki
+
+# PostgreSQL Docker Configuration (optional, has defaults)
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=jeki
 ```
 
 ### Optional Variables
@@ -737,3 +802,33 @@ RATE_WINDOW=1m
 1. `.env.{environment}` (e.g., `.env.dev`)
 2. `.env`
 3. System environment variables
+
+### Docker Environment Variables
+When using Docker, the following environment variables are used with their default values:
+- `DB_USER`: postgres (default)
+- `DB_PASSWORD`: postgres (default)
+- `DB_NAME`: jeki (default)
+
+These variables are read from your `.env.{environment}` file (e.g., `.env.dev`). The same file is used by both the application and PostgreSQL service.
+
+Example `.env.dev`:
+```env
+# Environment (dev, sit, uat, production)
+ENVIRONMENT=dev
+
+# Server Configuration
+SERVER_PORT=8080
+
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=jeki
+```
+
+Note: If these variables are not set in your `.env` file, the default values will be used:
+- DB_USER=postgres
+- DB_PASSWORD=postgres
+- DB_NAME=jeki
+
