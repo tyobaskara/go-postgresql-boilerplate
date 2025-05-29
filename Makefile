@@ -88,7 +88,7 @@ db-reset-docker:
 
 # Generate Swagger docs
 swagger:
-	swag init -g cmd/api/main.go -o api/swagger
+	swag init -g cmd/api/main.go -o docs/swagger
 
 # Install dependencies
 deps:
