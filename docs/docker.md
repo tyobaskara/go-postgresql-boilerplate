@@ -141,14 +141,41 @@ DOCKERFILE=Dockerfile docker-compose up --build
 
 ## Environment Variables
 
-The project uses environment variables for configuration. Create `.env.dev` or `.env.prod` files with the following variables:
+The project uses environment variables for configuration. Create `.env.{environment}` files (e.g., `.env.dev`, `.env.sit`, `.env.uat`, `.env.production`) with the following variables:
 
+```env
+# Environment (dev, sit, uat, production)
+ENVIRONMENT=dev
+
+# Server Configuration
+SERVER_PORT=8080
+
+# Database Configuration
+# Note: 
+# - If running locally (without Docker): use DB_HOST=localhost
+# - If running with Docker: use DB_HOST=postgres (service name in docker-compose)
+DB_HOST=postgres  # or localhost for local development
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=jeki
 ```
-DB_USER=your_db_user
-DB_PASSWORD=your_db_password
-DB_NAME=your_db_name
-ENV=dev|prod
-```
+
+### Environment File Priority
+
+The application reads environment variables in the following order:
+1. First, it attempts to read from `.env.{env}` (e.g., `.env.dev` if `env=dev`)
+2. Second, if that file is not found, it tries to read from `.env`
+3. Third, if neither file is found, the application will run and read environment variables set by Docker Compose
+
+### Docker Environment Variables
+
+When using Docker, the following environment variables are used with their default values:
+- `DB_USER`: postgres (default)
+- `DB_PASSWORD`: postgres (default)
+- `DB_NAME`: jeki (default)
+
+These variables are read from your `.env.{environment}` file (e.g., `.env.dev`). The same file is used by both the application and PostgreSQL service.
 
 ## Volumes
 
@@ -169,4 +196,44 @@ PostgreSQL service includes health checks to ensure the database is ready before
 2. Use production setup (`Dockerfile`) for deployment
 3. Keep sensitive information in environment files
 4. Use the provided health checks to ensure service availability
-5. Regularly update base images for security patches 
+5. Regularly update base images for security patches
+
+## Troubleshooting
+
+### Database Connection Issues
+
+1. **Connection Refused Error**
+   - If running with Docker:
+     - Make sure `DB_HOST=postgres` in your `.env.{environment}` file
+     - Check if PostgreSQL container is running: `docker-compose ps`
+     - Check PostgreSQL logs: `docker-compose logs postgres`
+   - If running locally:
+     - Make sure `DB_HOST=localhost` in your `.env.{environment}` file
+     - Check if PostgreSQL is running:
+       ```bash
+       # For Mac
+       brew services list
+       
+       # For Ubuntu/Debian
+       sudo systemctl status postgresql
+       ```
+
+2. **Wrong Database Host**
+   - When using Docker: Use `DB_HOST=postgres` (service name in docker-compose)
+   - When running locally: Use `DB_HOST=localhost`
+
+3. **Port Conflicts**
+   - If you get port conflict errors, make sure:
+     - No other PostgreSQL instance is running locally
+     - No other application is using port 5432
+     - Docker containers are not conflicting with local services
+
+4. **Container Not Starting**
+   - Check container logs: `docker-compose logs`
+   - Verify environment variables: `docker-compose config`
+   - Check for port conflicts: `lsof -i :5432`
+
+5. **Database Initialization Issues**
+   - Check initialization logs: `docker-compose logs postgres`
+   - Verify init script: `scripts/init.sql`
+   - Check permissions on mounted volumes 
