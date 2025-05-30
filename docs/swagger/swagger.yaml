@@ -9,7 +9,7 @@ servers:
     description: Local development server
 
 paths:
-  /api/users:
+  /v1/users:
     get:
       summary: Get all users
       tags:
@@ -81,7 +81,7 @@ paths:
                   error:
                     type: string
 
-  /api/users/{id}:
+  /v1/users/{id}:
     get:
       summary: Get user by ID
       tags:

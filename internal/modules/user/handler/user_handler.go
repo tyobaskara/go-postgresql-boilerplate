@@ -22,7 +22,7 @@ func NewUserHandler(userUsecase domain.UserUsecase) *UserHandler {
 
 // RegisterRoutes registers the user routes
 func (h *UserHandler) RegisterRoutes(router *gin.Engine) {
-	users := router.Group("/api/users")
+	users := router.Group("/v1/users")
 	{
 		users.POST("", h.CreateUser)
 		users.GET("", h.GetAllUsers)
