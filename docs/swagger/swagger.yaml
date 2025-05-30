@@ -9,7 +9,7 @@ servers:
     description: Local development server
 
 paths:
-  /users:
+  /api/users:
     get:
       summary: Get all users
       tags:
@@ -33,23 +33,18 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/User'
-                  meta:
-                    type: object
-                    properties:
-                      total:
-                        type: integer
-                      page:
-                        type: integer
-                      limit:
-                        type: integer
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
     post:
       summary: Create a new user
       tags:
@@ -59,7 +54,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateUserRequest'
+              $ref: '#/components/schemas/User'
       responses:
         '201':
           description: User created successfully
@@ -72,15 +67,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
-  /users/{id}:
+  /api/users/{id}:
     get:
       summary: Get user by ID
       tags:
@@ -99,18 +100,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid user ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
         '404':
           description: User not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
     put:
       summary: Update user
       tags:
@@ -127,7 +143,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateUserRequest'
+              $ref: '#/components/schemas/User'
       responses:
         '200':
           description: User updated successfully
@@ -140,19 +156,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
         '404':
           description: User not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
     delete:
       summary: Delete user
       tags:
@@ -167,18 +192,24 @@ paths:
       responses:
         '204':
           description: User deleted successfully
-        '404':
-          description: User not found
+        '400':
+          description: Invalid user ID
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: object
+                properties:
+                  error:
+                    type: string
 
 components:
   schemas:
@@ -204,39 +235,4 @@ components:
         - email
         - name
         - created_at
-        - updated_at
-
-    CreateUserRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-        name:
-          type: string
-      required:
-        - email
-        - name
-
-    UpdateUserRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-        name:
-          type: string
-      required:
-        - email
-        - name
-
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-      required:
-        - code
-        - message 
+        - updated_at 
