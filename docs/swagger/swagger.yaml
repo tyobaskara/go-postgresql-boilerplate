@@ -219,6 +219,7 @@ components:
         id:
           type: string
           format: uuid
+          description: Auto-generated UUID. Do not provide this when creating a new user.
         email:
           type: string
           format: email
@@ -227,12 +228,11 @@ components:
         created_at:
           type: string
           format: date-time
+          description: Auto-generated timestamp. Do not provide this when creating a new user.
         updated_at:
           type: string
           format: date-time
+          description: Auto-generated timestamp. Do not provide this when creating a new user.
       required:
-        - id
         - email
-        - name
-        - created_at
-        - updated_at 
+        - name 

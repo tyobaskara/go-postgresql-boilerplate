@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/tyobaskara/jeki-backend/internal/modules/user/domain"
 )
@@ -17,6 +19,14 @@ func NewUserUsecase(userRepo domain.UserRepository) domain.UserUsecase {
 }
 
 func (u *userUsecase) CreateUser(user *domain.User) error {
+	// Generate new UUID
+	user.ID = uuid.New()
+	
+	// Set timestamps
+	now := time.Now()
+	user.CreatedAt = now
+	user.UpdatedAt = now
+
 	return u.userRepo.Create(user)
 }
 
