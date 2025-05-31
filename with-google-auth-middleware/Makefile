@@ -125,12 +125,12 @@ DB_PASSWORD ?= postgres
 DB_SSL_MODE ?= disable
 
 # Docker configuration
-DOCKER_NETWORK ?= jeki-network
+DOCKER_NETWORK ?= jeki-backend_jeki-network
 AUTH_MIGRATIONS_PATH ?= internal/modules/auth/repository/migrations
 
 # Connection strings
 LOCAL_DB_URL ?= postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE)
-DOCKER_DB_URL ?= postgres://$(DB_USER):$(DB_PASSWORD)@db:5432/$(DB_NAME)?sslmode=$(DB_SSL_MODE)
+DOCKER_DB_URL ?= postgres://$(DB_USER):$(DB_PASSWORD)@postgres:5432/$(DB_NAME)?sslmode=$(DB_SSL_MODE)
 
 # Local migrations
 migrate-up-local:
@@ -156,7 +156,7 @@ migrate-down-docker:
 		-v $(shell pwd)/$(AUTH_MIGRATIONS_PATH):/migrations \
 		migrate/migrate \
 		-path /migrations \
-		-database "$(DOCKER_DB_URL)" down
+		-database "$(DOCKER_DB_URL)" down -all
 
 # Help command
 help:
