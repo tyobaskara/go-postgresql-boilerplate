@@ -2,8 +2,6 @@ module github.com/tyobaskara/jeki-backend
 
 go 1.23.0
 
-toolchain go1.23.9
-
 require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
