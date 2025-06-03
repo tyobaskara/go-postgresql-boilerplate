@@ -1,10 +1,10 @@
 # Authentication Module
 
-This module provides authentication functionality using Google OAuth 2.0 and JWT tokens.
+This module provides authentication functionality using Google OAuth 2.0 (ID token for mobile) and JWT tokens.
 
 ## Features
 
-- Google OAuth 2.0 authentication
+- Google OAuth 2.0 authentication (ID token/mobile flow)
 - JWT token-based session management
 - Refresh token mechanism
 - Session timeout
@@ -17,7 +17,6 @@ The module requires the following environment variables:
 ```env
 GOOGLE_CLIENT_ID=your_client_id
 GOOGLE_CLIENT_SECRET=your_client_secret
-GOOGLE_REDIRECT_URL=http://localhost:8080/v1/auth/google/callback
 JWT_SECRET=your_jwt_secret
 ACCESS_TOKEN_TTL=15m
 REFRESH_TOKEN_TTL=7d

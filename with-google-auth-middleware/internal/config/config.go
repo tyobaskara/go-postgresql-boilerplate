@@ -22,7 +22,6 @@ type Config struct {
 	DBName             string        // Database name
 	GoogleClientID     string        // Google OAuth client ID
 	GoogleClientSecret string        // Google OAuth client secret
-	GoogleRedirectURL  string        // Google OAuth redirect URL
 	JWTSecret          string        // JWT secret key
 	AccessTokenTTL     time.Duration // Access token time to live
 	RefreshTokenTTL    time.Duration // Refresh token time to live
@@ -70,7 +69,6 @@ func LoadConfig(env string) (*Config, error) {
 			DBName:             getEnv("DB_NAME", "jeki"),
 			GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 			GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
-			GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", ""),
 			JWTSecret:          getEnv("JWT_SECRET", ""),
 			AccessTokenTTL:     time.Duration(getEnvAsInt("ACCESS_TOKEN_TTL", 15)) * time.Minute,
 			RefreshTokenTTL:    time.Duration(getEnvAsInt("REFRESH_TOKEN_TTL", 7*24)) * time.Hour,

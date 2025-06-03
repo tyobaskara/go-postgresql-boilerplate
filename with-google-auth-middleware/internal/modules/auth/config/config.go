@@ -5,7 +5,6 @@ import "time"
 type Config struct {
 	GoogleClientID     string
 	GoogleClientSecret string
-	GoogleRedirectURL  string
 	JWTSecret         string
 	AccessTokenTTL    time.Duration
 	RefreshTokenTTL   time.Duration
@@ -14,7 +13,6 @@ type Config struct {
 func NewConfig(
 	googleClientID string,
 	googleClientSecret string,
-	googleRedirectURL string,
 	jwtSecret string,
 	accessTokenTTL time.Duration,
 	refreshTokenTTL time.Duration,
@@ -22,7 +20,6 @@ func NewConfig(
 	return &Config{
 		GoogleClientID:     googleClientID,
 		GoogleClientSecret: googleClientSecret,
-		GoogleRedirectURL:  googleRedirectURL,
 		JWTSecret:         jwtSecret,
 		AccessTokenTTL:    accessTokenTTL,
 		RefreshTokenTTL:   refreshTokenTTL,

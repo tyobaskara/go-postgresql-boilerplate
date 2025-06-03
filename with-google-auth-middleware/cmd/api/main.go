@@ -42,7 +42,6 @@ func main() {
 	authCfg := authconfig.NewConfig(
 		cfg.GoogleClientID,
 		cfg.GoogleClientSecret,
-		cfg.GoogleRedirectURL,
 		cfg.JWTSecret,
 		cfg.AccessTokenTTL,
 		cfg.RefreshTokenTTL,
@@ -57,7 +56,6 @@ func main() {
 		usecase.AuthUsecaseConfig{
 			ClientID:     authCfg.GoogleClientID,
 			ClientSecret: authCfg.GoogleClientSecret,
-			RedirectURL:  authCfg.GoogleRedirectURL,
 			JWTSecret:    authCfg.JWTSecret,
 			TokenConfig: usecase.TokenConfig{
 				AccessTTL:  authCfg.AccessTokenTTL,

@@ -1,4 +1,4 @@
-.PHONY: build run test clean docker-build docker-up docker-down dev prod go-mod-tidy db-setup db-setup-docker db-reset db-reset-docker swagger deps migrate-up-local migrate-down-local migrate-up-docker migrate-down-docker help
+.PHONY: build run test clean docker-build docker-up docker-down dev prod go-mod-tidy db-setup db-setup-docker db-reset db-reset-docker swagger deps migrate-up-local migrate-down-local migrate-up-docker migrate-down-docker help logs
 
 # Build the application
 build:
@@ -31,6 +31,10 @@ docker-up:
 
 docker-down:
 	docker-compose down
+
+# View logs
+logs:
+	docker-compose logs -f app
 
 # Development environment (with hot reload)
 dev:

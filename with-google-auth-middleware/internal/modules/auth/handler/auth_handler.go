@@ -18,28 +18,28 @@ func NewAuthHandler(authUsecase domain.AuthUsecase) *AuthHandler {
 	}
 }
 
-// LoginWithGoogle handles Google OAuth login
-// @Summary Login with Google
-// @Description Authenticate user with Google OAuth
+// LoginWithGoogle handles Google OAuth login for mobile applications only
+// @Summary Login with Google (Mobile)
+// @Description Authenticate user with Google OAuth using ID token
 // @Tags auth
-// @Accept json
+// @Accept application/x-www-form-urlencoded
 // @Produce json
-// @Param code query string true "Google OAuth code"
+// @Param id_token formData string true "Google ID token"
 // @Success 200 {object} domain.AuthToken
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /auth/google [post]
 func (h *AuthHandler) LoginWithGoogle(c *gin.Context) {
-	code := c.Query("code")
-	if code == "" {
+	idToken := c.PostForm("id_token")
+	if idToken == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "Authorization code is required",
+			Error: "ID token is required",
 		})
 		return
 	}
 
-	token, err := h.authUsecase.LoginWithGoogle(code)
+	token, err := h.authUsecase.LoginWithGoogleIDToken(c.Request.Context(), idToken)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, ErrorResponse{
 			Error: "Failed to authenticate with Google",
@@ -71,7 +71,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	token, err := h.authUsecase.RefreshToken(refreshToken)
+	token, err := h.authUsecase.RefreshToken(c.Request.Context(), refreshToken)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, ErrorResponse{
 			Error: "Invalid refresh token",
@@ -102,7 +102,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		return
 	}
 
-	if err := h.authUsecase.Logout(userID.(uuid.UUID)); err != nil {
+	if err := h.authUsecase.Logout(c.Request.Context(), userID.(uuid.UUID)); err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error: "Failed to logout",
 		})
@@ -127,7 +127,6 @@ type SuccessResponse struct {
 // RegisterRoutes registers all auth routes
 func (h *AuthHandler) RegisterRoutes(router *gin.RouterGroup) {
 	group := router.Group("/auth")
-
 	{
 		group.POST("/google", h.LoginWithGoogle)
 		group.POST("/refresh", h.RefreshToken)

@@ -135,7 +135,6 @@ DB_NAME=jeki
 # Auth Configuration
 GOOGLE_CLIENT_ID=your_client_id
 GOOGLE_CLIENT_SECRET=your_client_secret
-GOOGLE_REDIRECT_URL=http://localhost:8080/v1/auth/google/callback
 JWT_SECRET=your_jwt_secret
 ACCESS_TOKEN_TTL=15m
 REFRESH_TOKEN_TTL=7d
@@ -406,38 +405,19 @@ make clean       # Clean build artifacts
 
 ### Docker Commands
 
-The application uses Docker for containerization. Here are the key Docker-related commands:
+```bash
+# Build and start containers
+make docker-up
 
-1. **Starting Services**:
+# Stop and remove containers
+make docker-down
 
-   ```bash
-   make docker-up
-   ```
+# View application logs
+make logs
 
-   This will:
-
-   - Build the application
-   - Start PostgreSQL database
-   - Initialize the database with required schemas
-   - Start the application
-   - Start Swagger UI
-
-2. **Stopping Services**:
-
-   ```bash
-   # Stop services but keep the data
-   make docker-down
-
-   # Stop services and remove all data (including database)
-   make docker-down-volumes
-   ```
-
-3. **Accessing Services**:
-   - API: <http://localhost:8080>
-   - Swagger UI: <http://localhost:8081>
-   - Database: localhost:5432
-
-Note: Using `make docker-down` is safe for development as it preserves your database data. Use `make docker-down-volumes` only when you want to completely reset your environment.
+# Rebuild and restart containers
+make docker-build
+```
 
 ### Database Management
 

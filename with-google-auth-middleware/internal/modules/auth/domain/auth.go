@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -47,8 +48,8 @@ type AuthRepository interface {
 
 // AuthUsecase defines the interface for auth business logic
 type AuthUsecase interface {
-	LoginWithGoogle(code string) (*AuthToken, error)
-	RefreshToken(refreshToken string) (*AuthToken, error)
-	Logout(userID uuid.UUID) error
-	ValidateToken(token string) (*AuthToken, error)
+	LoginWithGoogleIDToken(ctx context.Context, idToken string) (*AuthToken, error)
+	RefreshToken(ctx context.Context, refreshToken string) (*AuthToken, error)
+	Logout(ctx context.Context, userID uuid.UUID) error
+	ValidateToken(ctx context.Context, token string) (*AuthToken, error)
 } 

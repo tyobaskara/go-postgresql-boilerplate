@@ -29,7 +29,6 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		usecase.AuthUsecaseConfig{
 			ClientID:     cfg.GoogleClientID,
 			ClientSecret: cfg.GoogleClientSecret,
-			RedirectURL:  cfg.GoogleRedirectURL,
 			JWTSecret:    cfg.JWTSecret,
 			TokenConfig: usecase.TokenConfig{
 				AccessTTL:  cfg.AccessTokenTTL,
