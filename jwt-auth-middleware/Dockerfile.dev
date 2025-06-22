@@ -1,0 +1,17 @@
+FROM golang:1.23-alpine
+
+WORKDIR /app
+
+# Set GOPROXY for faster downloads
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GOSUMDB=sum.golang.org
+
+# Install Air
+RUN go install github.com/cosmtrek/air@v1.49.0
+
+# Copy Air config
+COPY .air.toml .
+
+EXPOSE 8080
+
+CMD ["air", "-c", ".air.toml"] 
