@@ -2,11 +2,12 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/tyobaskara/jeki-backend/internal/modules/auth/domain"
-	userdomain "github.com/tyobaskara/jeki-backend/internal/modules/user/domain"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/auth/domain"
+	userdomain "github.com/tyobaskara/maxwash-backend/internal/modules/user/domain"
 )
 
 type AuthHandler struct {
@@ -129,14 +130,14 @@ func (h *AuthHandler) LoginWithGoogle(c *gin.Context) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param refresh_token query string true "Refresh token"
+// @Param refreshToken query string true "Refresh token"
 // @Success 200 {object} domain.AuthToken
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /auth/refresh [post]
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
-	refreshToken := c.Query("refresh_token")
+	refreshToken := c.Query("refreshToken")
 	if refreshToken == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Error: "Refresh token is required",
@@ -157,7 +158,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 
 // Logout handles user logout
 // @Summary Logout user
-// @Description Invalidate all user sessions
+// @Description Invalidate all user sessions and blacklist current token
 // @Tags auth
 // @Accept json
 // @Produce json
@@ -167,7 +168,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
-	userID, exists := c.Get("user_id")
+	userID, exists := c.Get("userId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, ErrorResponse{
 			Error: "Unauthorized",
@@ -175,7 +176,17 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		return
 	}
 
-	if err := h.authUsecase.Logout(c.Request.Context(), userID.(uuid.UUID)); err != nil {
+	// Extract the current access token from Authorization header
+	authHeader := c.GetHeader("Authorization")
+	var currentToken string
+	if authHeader != "" {
+		parts := strings.Split(authHeader, " ")
+		if len(parts) == 2 && parts[0] == "Bearer" {
+			currentToken = parts[1]
+		}
+	}
+
+	if err := h.authUsecase.Logout(c.Request.Context(), userID.(uuid.UUID), currentToken); err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error: "Failed to logout",
 		})

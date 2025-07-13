@@ -11,8 +11,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/tyobaskara/jeki-backend/internal/modules/auth/domain"
-	userdomain "github.com/tyobaskara/jeki-backend/internal/modules/user/domain"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/auth/domain"
+	userdomain "github.com/tyobaskara/maxwash-backend/internal/modules/user/domain"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
@@ -110,6 +110,11 @@ func (u *authUsecase) LoginWithGoogleIDToken(ctx context.Context, idToken string
 		}
 	}
 
+	// Update last login time
+	if err := u.userRepo.UpdateLastLoginAt(user.ID, time.Now()); err != nil {
+		return nil, fmt.Errorf("failed to update last login time: %w", err)
+	}
+
 	// Generate tokens
 	refreshToken, err := generateRefreshToken()
 	if err != nil {
@@ -170,25 +175,45 @@ func (u *authUsecase) RefreshToken(ctx context.Context, refreshToken string) (*d
 		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
 
+	// Generate new refresh token (rotation)
+	newRefreshToken, err := generateRefreshToken()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
+	}
+
+	// Update session with new refresh token
+	session.RefreshToken = newRefreshToken
+	session.UpdatedAt = time.Now()
+	if err := u.authRepo.UpdateSession(session); err != nil {
+		return nil, fmt.Errorf("failed to update session: %w", err)
+	}
+
 	// Generate new access token
 	accessToken, err := u.generateAccessToken(user)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate access token: %w", err)
 	}
 
-	return u.createAuthToken(accessToken, refreshToken), nil
+	return u.createAuthToken(accessToken, newRefreshToken), nil
 }
 
-func (u *authUsecase) Logout(ctx context.Context, userID uuid.UUID) error {
+func (u *authUsecase) Logout(ctx context.Context, userID uuid.UUID, currentToken string) error {
+	// Delete all user sessions (refresh tokens)
 	if err := u.authRepo.DeleteUserSessions(userID); err != nil {
 		return fmt.Errorf("failed to delete user sessions: %w", err)
 	}
+	
+	// Update last logout time (IMMEDIATE INVALIDATION)
+	if err := u.userRepo.UpdateLastLogoutAt(userID, time.Now()); err != nil {
+		return fmt.Errorf("failed to update last logout time: %w", err)
+	}
+	
 	return nil
 }
 
-func (u *authUsecase) ValidateToken(ctx context.Context, token string) (*domain.AuthToken, error) {
+func (u *authUsecase) ValidateToken(tokenString string) (*uuid.UUID, error) {
 	claims := jwt.MapClaims{}
-	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return u.jwtSecret, nil
 	})
 	if err != nil {
@@ -207,22 +232,7 @@ func (u *authUsecase) ValidateToken(ctx context.Context, token string) (*domain.
 		return nil, fmt.Errorf("%w: %v", ErrInvalidUserID, err)
 	}
 
-	user, err := u.userRepo.FindByID(userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find user: %w", err)
-	}
-
-	accessToken, err := u.generateAccessToken(user)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate access token: %w", err)
-	}
-
-	return &domain.AuthToken{
-		AccessToken: accessToken,
-		TokenType:   "Bearer",
-		ExpiresIn:   int64(u.accessTTL.Seconds()),
-		ExpiresAt:   time.Now().Add(u.accessTTL),
-	}, nil
+	return &userID, nil
 }
 
 func (u *authUsecase) generateAccessToken(user *userdomain.User) (string, error) {
@@ -273,6 +283,11 @@ func (u *authUsecase) LoginWithPassword(ctx context.Context, email, password str
 	// Validate password using bcrypt
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		return nil, errors.New("invalid password")
+	}
+
+	// Update last login time
+	if err := u.userRepo.UpdateLastLoginAt(user.ID, time.Now()); err != nil {
+		return nil, fmt.Errorf("failed to update last login time: %w", err)
 	}
 
 	// Generate tokens
@@ -330,6 +345,11 @@ func (u *authUsecase) SignupWithPassword(ctx context.Context, email, name, passw
 
 	if err := u.userRepo.Create(user); err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
+	}
+
+	// Update last login time (first login)
+	if err := u.userRepo.UpdateLastLoginAt(user.ID, time.Now()); err != nil {
+		return nil, fmt.Errorf("failed to update last login time: %w", err)
 	}
 
 	// Generate tokens

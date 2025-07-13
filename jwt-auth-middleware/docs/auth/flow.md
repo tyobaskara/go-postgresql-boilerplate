@@ -1,160 +1,44 @@
-# Authentication Flow
+# Authentication Flow Documentation
 
 ## Overview
 
-Jeki menggunakan dua metode autentikasi:
-1. **Password-based Authentication** - Email dan password tradisional
-2. **Google OAuth 2.0** - Autentikasi melalui Google
+Dokumen ini menjelaskan alur autentikasi yang diimplementasikan dalam sistem maxwash backend. Sistem mendukung dua jenis autentikasi:
 
-Kedua metode menggunakan JWT untuk manajemen session. Flow autentikasi terdiri dari beberapa komponen utama:
+1. **Password-based Authentication** - Login dengan email dan password
+2. **Google OAuth Authentication** - Login menggunakan Google OAuth
 
-1. **AuthHandler** - Menangani HTTP requests terkait autentikasi
-2. **AuthUsecase** - Mengimplementasikan logika bisnis autentikasi
-3. **AuthRepository** - Mengelola data autentikasi di database
-4. **AuthMiddleware** - Memvalidasi JWT token untuk protected routes
+## Arsitektur Autentikasi
 
-## Flow Autentikasi
+### Komponen Utama
 
-### 1. Password-based Signup
+1. **AuthHandler** - Menangani HTTP requests untuk autentikasi
+2. **AuthUsecase** - Logika bisnis autentikasi
+3. **AuthRepository** - Akses data autentikasi
+4. **AuthMiddleware** - Middleware untuk protected routes
+5. **UserRepository** - Akses data user
 
-```mermaid
-sequenceDiagram
-    Client->>+AuthHandler: POST /v1/auth/signup
-    Note over Client,AuthHandler: {email, name, password}
-    AuthHandler->>+AuthUsecase: SignupWithPassword(email, name, password)
-    AuthUsecase->>+UserRepository: Check if user exists
-    UserRepository-->>-AuthUsecase: User not found
-    AuthUsecase->>AuthUsecase: Hash password with bcrypt
-    AuthUsecase->>+UserRepository: Create user
-    UserRepository-->>-AuthUsecase: Success
-    AuthUsecase->>AuthUsecase: Generate JWT tokens
-    AuthUsecase->>+AuthRepository: Create session
-    AuthRepository-->>-AuthUsecase: Success
-    AuthUsecase-->>-AuthHandler: Auth tokens
-    AuthHandler-->>-Client: JWT tokens
+### Flow Diagram
+
+```
+Client Request
+    ↓
+AuthHandler
+    ↓
+AuthUsecase (Business Logic)
+    ↓
+AuthRepository/UserRepository
+    ↓
+Database (PostgreSQL)
 ```
 
-### 2. Password-based Login
+## Password-based Authentication
 
-```mermaid
-sequenceDiagram
-    Client->>+AuthHandler: POST /v1/auth/login
-    Note over Client,AuthHandler: {email, password}
-    AuthHandler->>+AuthUsecase: LoginWithPassword(email, password)
-    AuthUsecase->>+UserRepository: Find user by email
-    UserRepository-->>-AuthUsecase: User found
-    AuthUsecase->>AuthUsecase: Verify password with bcrypt
-    AuthUsecase->>AuthUsecase: Generate JWT tokens
-    AuthUsecase->>+AuthRepository: Create session
-    AuthRepository-->>-AuthUsecase: Success
-    AuthUsecase-->>-AuthHandler: Auth tokens
-    AuthHandler-->>-Client: JWT tokens
-```
+### 1. User Registration (Signup)
 
-### 3. Google OAuth Login
+**Endpoint**: `POST /v1/auth/signup`
 
-```mermaid
-sequenceDiagram
-    Client->>+AuthHandler: POST /v1/auth/google
-    Note over Client,AuthHandler: id_token from Google
-    AuthHandler->>+AuthUsecase: LoginWithGoogleIDToken(idToken)
-    AuthUsecase->>+Google: Verify ID token
-    Google-->>-AuthUsecase: User info
-    AuthUsecase->>+UserRepository: Find/Create user
-    UserRepository-->>-AuthUsecase: Success
-    AuthUsecase->>AuthUsecase: Generate JWT tokens
-    AuthUsecase->>+AuthRepository: Create session
-    AuthRepository-->>-AuthUsecase: Success
-    AuthUsecase-->>-AuthHandler: Auth tokens
-    AuthHandler-->>-Client: JWT tokens
-```
-
-### 4. Token Refresh
-
-```mermaid
-sequenceDiagram
-    Client->>+AuthHandler: POST /v1/auth/refresh?refresh_token=xxx
-    AuthHandler->>+AuthUsecase: RefreshToken(token)
-    AuthUsecase->>+AuthRepository: Get session by refresh token
-    AuthRepository-->>-AuthUsecase: Session found
-    AuthUsecase->>AuthUsecase: Validate session expiry
-    AuthUsecase->>AuthUsecase: Generate new access token
-    AuthUsecase-->>-AuthHandler: New access token
-    AuthHandler-->>-Client: New access token
-```
-
-### 5. Protected Route Access
-
-```mermaid
-sequenceDiagram
-    Client->>+AuthMiddleware: Request with JWT
-    AuthMiddleware->>AuthMiddleware: Validate JWT
-    AuthMiddleware->>AuthMiddleware: Extract user_id
-    AuthMiddleware-->>-Client: Continue to handler
-```
-
-### 6. Logout
-
-```mermaid
-sequenceDiagram
-    Client->>+AuthHandler: POST /v1/auth/logout
-    Note over Client,AuthHandler: Bearer token in header
-    AuthHandler->>+AuthUsecase: Logout(user_id)
-    AuthUsecase->>+AuthRepository: Delete all user sessions
-    AuthRepository-->>-AuthUsecase: Success
-    AuthUsecase-->>-AuthHandler: Success
-    AuthHandler-->>-Client: Success response
-```
-
-## Komponen
-
-### AuthHandler
-
-Menangani HTTP requests terkait autentikasi:
-- `Signup` - Registrasi user dengan email dan password
-- `Login` - Login user dengan email dan password
-- `LoginWithGoogle` - Memproses Google OAuth
-- `RefreshToken` - Memperbarui access token
-- `Logout` - Mengakhiri session
-
-### AuthUsecase
-
-Mengimplementasikan logika bisnis autentikasi:
-- Password-based authentication dengan bcrypt hashing
-- Integrasi dengan Google OAuth
-- Manajemen JWT tokens
-- Validasi user credentials
-
-### AuthRepository
-
-Mengelola data autentikasi di database menggunakan GORM:
-- Menyimpan user data
-- Mengelola refresh tokens
-- Tracking session
-
-### AuthMiddleware
-
-Middleware untuk protected routes:
-- Validasi JWT token
-- Ekstrak user info dari token
-- Menolak request yang tidak valid
-
-## API Endpoints
-
-### Public Endpoints (No Authentication Required)
-- `POST /v1/auth/signup` - User registration
-- `POST /v1/auth/login` - User login
-- `POST /v1/auth/google` - Google OAuth login
-- `POST /v1/auth/refresh` - Token refresh
-
-### Protected Endpoints (Authentication Required)
-- `POST /v1/auth/logout` - User logout
-
-## Request/Response Examples
-
-### Signup Request
+**Request Body**:
 ```json
-POST /v1/auth/signup
 {
   "email": "user@example.com",
   "name": "John Doe",
@@ -162,93 +46,327 @@ POST /v1/auth/signup
 }
 ```
 
-### Login Request
+**Response**:
 ```json
-POST /v1/auth/login
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "refreshToken": "abc123def456ghi789...",
+  "expiresAt": "2024-01-01T12:00:00Z"
+}
+```
+
+**Flow**:
+1. Validasi input (email, name, password)
+2. Hash password menggunakan bcrypt
+3. Simpan user ke database
+4. Generate JWT access token dan refresh token
+5. Simpan session ke database
+6. Return token response
+
+### 2. User Login
+
+**Endpoint**: `POST /v1/auth/login`
+
+**Request Body**:
+```json
 {
   "email": "user@example.com",
   "password": "securepassword123"
 }
 ```
 
-### Response (Both Signup and Login)
+**Response**: Same as signup response
+
+**Flow**:
+1. Validasi input (email, password)
+2. Cari user berdasarkan email
+3. Verifikasi password menggunakan bcrypt
+4. Update lastLoginAt timestamp
+5. Generate JWT access token dan refresh token
+6. Simpan session ke database
+7. Return token response
+
+## Google OAuth Authentication
+
+### 1. Google OAuth Login
+
+**Endpoint**: `POST /v1/auth/google`
+
+**Request Body** (form-data):
+```
+id_token: <google_id_token>
+```
+
+**Response**: Same as password login response
+
+**Flow**:
+1. Validasi Google ID token
+2. Extract user info dari Google
+3. Cari atau buat user berdasarkan email
+4. Update lastLoginAt timestamp
+5. Generate JWT access token dan refresh token
+6. Simpan session ke database
+7. Return token response
+
+## Token Management
+
+### 1. Token Refresh
+
+**Endpoint**: `POST /v1/auth/refresh?refreshToken=<token>`
+
+**Response**:
 ```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "Bearer",
-  "expires_in": 3600,
-  "refresh_token": "abc123...",
-  "expires_at": "2024-01-01T12:00:00Z"
+  "accessToken": "new_accessToken_here...",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "expiresAt": "2024-01-01T12:00:00Z"
 }
 ```
 
-## Konfigurasi
+**Flow**:
+1. Validasi refresh token
+2. Cek apakah token masih valid di database
+3. Generate access token baru
+4. Update session expiresAt
+5. Return new access token
 
-Autentikasi membutuhkan beberapa konfigurasi:
+### 2. Logout
 
-1. **Password Authentication**:
-   - bcrypt cost factor (default: 10)
-   - Password minimum length (6 characters)
+**Endpoint**: `POST /v1/auth/logout`
 
-2. **Google OAuth**:
-   - Client ID
-   - Client Secret
-   - Redirect URL
+**Headers**: `Authorization: Bearer <accessToken>`
 
-3. **JWT**:
-   - Secret key
-   - Access token TTL
-   - Refresh token TTL
+**Response**:
+```json
+{
+  "message": "Successfully logged out"
+}
+```
 
-Semua konfigurasi ini diatur melalui environment variables.
+**Flow**:
+1. Validasi access token
+2. Extract user ID dari token
+3. Hapus semua session user dari database
+4. Blacklist current token
+5. Return success message
+
+## Protected Routes
+
+### Middleware Implementation
+
+Semua protected routes menggunakan `AuthMiddleware`:
+
+```go
+func (m *AuthMiddleware) AuthRequired() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        // Extract token from Authorization header
+        // Validate JWT token
+        // Set userId in context
+        // Continue to handler
+    }
+}
+```
+
+### Protected Endpoints
+
+- `POST /v1/auth/logout` - Logout user
+- `GET /v1/users` - Get all users
+- `GET /v1/users/:id` - Get user by ID
+- `PUT /v1/users/:id` - Update user
+- `DELETE /v1/users/:id` - Delete user
+
+## Database Schema
+
+### Users Table
+
+```sql
+CREATE TABLE users (
+    id UUID PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    password VARCHAR(255), -- Nullable untuk Google OAuth users
+    last_login_at TIMESTAMP WITH TIME ZONE,
+    last_logout_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Sessions Table
+
+```sql
+CREATE TABLE sessions (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    refresh_token TEXT NOT NULL UNIQUE,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## JWT Token Structure
+
+### Access Token Payload
+
+```json
+{
+  "sub": "userId",
+  "exp": 1640995200,
+  "iat": 1640991600,
+  "type": "access"
+}
+```
+
+### Refresh Token Payload
+
+```json
+{
+  "sub": "userId",
+  "exp": 1641078000,
+  "iat": 1640991600,
+  "type": "refresh",
+  "sessionId": "session_uuid"
+}
+```
 
 ## Error Handling
 
-1. **Invalid Credentials**:
-   - Status: 401 Unauthorized
-   - Message: "Invalid credentials"
+### Common Error Responses
 
-2. **User Already Exists**:
-   - Status: 409 Conflict
-   - Message: "user with this email already exists"
+**400 Bad Request**:
+```json
+{
+  "error": "Invalid request body: email is required"
+}
+```
 
-3. **Invalid OAuth Code**:
-   - Status: 401 Unauthorized
-   - Message: "Failed to authenticate with Google"
+**401 Unauthorized**:
+```json
+{
+  "error": "Invalid credentials"
+}
+```
 
-4. **Invalid Refresh Token**:
-   - Status: 401 Unauthorized
-   - Message: "Invalid refresh token"
+**409 Conflict**:
+```json
+{
+  "error": "User with this email already exists"
+}
+```
 
-5. **Invalid JWT**:
-   - Status: 401 Unauthorized
-   - Message: "Unauthorized"
+**500 Internal Server Error**:
+```json
+{
+  "error": "Internal server error"
+}
+```
 
 ## Security Considerations
 
-1. **Password Security**:
-   - bcrypt hashing dengan cost factor 10
-   - Password minimum 6 karakter
-   - Password tidak pernah disimpan dalam plain text
+### 1. Password Security
+- Password di-hash menggunakan bcrypt dengan cost factor 10
+- Password minimum 6 karakter
+- Password tidak pernah disimpan dalam plain text
 
-2. **JWT Security**:
-   - Access token TTL pendek (15 menit)
-   - Refresh token TTL lebih panjang (7 hari)
-   - Secure secret key
+### 2. Token Security
+- Access token expires dalam 1 jam
+- Refresh token expires dalam 24 jam
+- Token disimpan dengan aman di database
+- Implementasi token blacklisting
 
-3. **OAuth Security**:
-   - Validasi ID token dari Google
-   - Secure redirect URI
-   - HTTPS required
+### 3. Session Management
+- Multiple sessions per user
+- Automatic cleanup expired sessions
+- Session invalidation pada logout
 
-4. **Database Security**:
-   - Encrypted sensitive data
-   - Secure password hashing
-   - Session tracking
-   - Unique constraints pada email
+### 4. Input Validation
+- Validasi email format
+- Validasi password strength
+- Sanitasi input data
+- Rate limiting pada auth endpoints
 
-5. **Input Validation**:
-   - Email format validation
-   - Password strength requirements
-   - XSS protection
-   - SQL injection protection 
+## Configuration
+
+### Environment Variables
+
+```env
+# JWT Configuration
+JWT_SECRET=your_jwt_secret_key
+ACCESS_TOKEN_TTL=1h
+REFRESH_TOKEN_TTL=24h
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=maxwash
+```
+
+### Token Configuration
+
+```go
+type TokenConfig struct {
+    AccessTTL  time.Duration // Default: 1 hour
+    RefreshTTL time.Duration // Default: 24 hours
+}
+```
+
+## Testing
+
+### Unit Tests
+
+```bash
+# Run auth tests
+go test ./internal/modules/auth/...
+
+# Run with coverage
+go test -cover ./internal/modules/auth/...
+```
+
+### Integration Tests
+
+```bash
+# Test auth endpoints
+curl -X POST http://localhost:8080/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","name":"Test User","password":"password123"}'
+```
+
+## Monitoring & Logging
+
+### Log Levels
+- **DEBUG**: Detailed authentication flow
+- **INFO**: Successful login/logout events
+- **WARN**: Failed authentication attempts
+- **ERROR**: System errors and exceptions
+
+### Metrics
+- Login success/failure rates
+- Token refresh frequency
+- Session duration statistics
+- Error rate monitoring
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Token Expired**: Refresh token atau login ulang
+2. **Invalid Credentials**: Cek email dan password
+3. **Database Connection**: Cek koneksi database
+4. **Google OAuth**: Validasi client ID dan secret
+
+### Debug Steps
+
+1. Check server logs for detailed error messages
+2. Verify database connection and schema
+3. Test JWT token validation
+4. Monitor authentication flow with debug logs 

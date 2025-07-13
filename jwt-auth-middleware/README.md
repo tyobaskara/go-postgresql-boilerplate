@@ -1,9 +1,68 @@
-# Jeki Backend
+# maxwash Backend
 
-Backend service for Jeki application built with Go.
+Backend service for maxwash application built with Go.
+
+## First Time Init on Local Development / Production
+1. Update scripts/init.sql
+2. rm -f migrations/*.sql
+3. make docker-up
+4. make db-setup-docker
+
+Reset On development
+1. make db-reset-docker (reset database)
+2. make docker-down
+3. make docker-up
+
+## Production Workflow:
+### 1. Backup
+pg_dump -U postgres maxwash > backup.sql
+
+### 2. Deploy new code
+git pull origin main
+
+### 3. Run migrations
+make migrate-up-docker
+
+### 4. Verify
+curl http://localhost:8080/health
+
+### 5. If rollback needed
+make migrate-down-docker
+
+## Debug
+
+### 1. Cek Server Status
+docker-compose ps
+
+### 2. Cek Application Logs
+docker-compose logs app
+
+### 3. Fix Go Module Dependencies
+docker-compose exec app go mod tidy
+
+### 4. Restart Application
+docker-compose restart app
+
+### 5. Test API Endpoint
+curl -X GET http://localhost:8080/ping
+
+`{"message":"pong"}`
 
 ## Table of Contents
-- [Jeki Backend](#jeki-backend)
+- [maxwash Backend](#maxwash-backend)
+  - [First Time Init on Local Development / Production](#first-time-init-on-local-development--production)
+  - [Production Workflow:](#production-workflow)
+    - [1. Backup](#1-backup)
+    - [2. Deploy new code](#2-deploy-new-code)
+    - [3. Run migrations](#3-run-migrations)
+    - [4. Verify](#4-verify)
+    - [5. If rollback needed](#5-if-rollback-needed)
+  - [Debug](#debug)
+    - [1. Cek Server Status](#1-cek-server-status)
+    - [2. Cek Application Logs](#2-cek-application-logs)
+    - [3. Fix Go Module Dependencies](#3-fix-go-module-dependencies)
+    - [4. Restart Application](#4-restart-application)
+    - [5. Test API Endpoint](#5-test-api-endpoint)
   - [Table of Contents](#table-of-contents)
   - [Prerequisites](#prerequisites)
   - [Project Structure](#project-structure)
@@ -130,7 +189,7 @@ DB_HOST=postgres  # or localhost for local development
 DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres
-DB_NAME=jeki
+DB_NAME=maxwash
 
 # Auth Configuration
 GOOGLE_CLIENT_ID=your_client_id
@@ -265,13 +324,13 @@ If you prefer to run the application without Docker, follow these steps:
 3. Verify connection:
 
    ```bash
-   psql -U postgres jeki
+   psql -U postgres maxwash
    ```
 
 Note: The `make db-setup` command will automatically:
 
 - Create the postgres user if it doesn't exist
-- Create the jeki database
+- Create the maxwash database
 - Grant necessary permissions
 - Run initialization scripts
 
@@ -466,8 +525,8 @@ When using Docker, you can access the database in several ways:
 
 1. **Using psql inside Docker container**:
    ```bash
-   # Connect directly to jeki database
-   docker-compose exec postgres psql -U postgres jeki
+   # Connect directly to maxwash database
+   docker-compose exec postgres psql -U postgres maxwash
 
    # Or connect to postgres first
    docker-compose exec postgres psql -U postgres
@@ -477,21 +536,21 @@ When using Docker, you can access the database in several ways:
    - **pgAdmin**:
      - Host: localhost
      - Port: 5432
-     - Database: jeki
+     - Database: maxwash
      - Username: postgres
      - Password: postgres
 
    - **DBeaver**:
      - Host: localhost
      - Port: 5432
-     - Database: jeki
+     - Database: maxwash
      - Username: postgres
      - Password: postgres
 
 3. **Common psql commands** (when connected):
    ```sql
    \l          # List databases
-   \c jeki     # Connect to jeki database
+   \c maxwash     # Connect to maxwash database
    \dt         # List tables
    \d users    # Describe users table
    \q          # Quit psql
@@ -506,10 +565,10 @@ When using Docker, you can access the database in several ways:
    make db-reset-docker
 
    # Backup database
-   docker-compose exec postgres pg_dump -U postgres jeki > backup.sql
+   docker-compose exec postgres pg_dump -U postgres maxwash > backup.sql
 
    # Restore database
-   docker-compose exec -T postgres psql -U postgres jeki < backup.sql
+   docker-compose exec -T postgres psql -U postgres maxwash < backup.sql
    ```
 
 #### Local Database Setup
@@ -535,13 +594,13 @@ If you're running PostgreSQL locally (without Docker), follow these steps in ord
 3. **Verify connection**:
 
    ```bash
-   psql -U postgres jeki
+   psql -U postgres maxwash
    ```
 
 Note: The `make db-setup` command will automatically:
 
 - Create the postgres user if it doesn't exist
-- Create the jeki database
+- Create the maxwash database
 - Grant necessary permissions
 - Run initialization scripts
 
@@ -550,11 +609,11 @@ Note: The `make db-setup` command will automatically:
 ```bash
 # Connect to database
 # psql -U <username> <database_name>
-psql -U postgres jeki
+psql -U postgres maxwash
 
 # Common psql commands
 \l          # List databases
-\c jeki     # Connect to jeki database
+\c maxwash     # Connect to maxwash database
 \dt         # List tables
 \d users    # Describe users table
 \q          # Quit psql (exit to terminal)
@@ -570,7 +629,7 @@ Note: Commands starting with `\` are psql internal commands, not shell commands.
    - Connect using:
      - Host: localhost
      - Port: 5432
-     - Database: jeki
+     - Database: maxwash
      - Username: postgres
      - Password: postgres
 
@@ -583,10 +642,10 @@ Note: Commands starting with `\` are psql internal commands, not shell commands.
 
 ```bash
 # Backup
-pg_dump -U postgres jeki > backup.sql
+pg_dump -U postgres maxwash > backup.sql
 
 # Restore
-psql -U postgres jeki < backup.sql
+psql -U postgres maxwash < backup.sql
 ```
 
 ## Future Improvements
@@ -732,7 +791,7 @@ Berikut adalah saran pengembangan untuk masa depan:
 ### Swagger UI
 Access the API documentation at:
 - Development: http://localhost:8081
-- Production: https://api.jeki.com/docs
+- Production: https://api.maxwash.com/docs
 
 ### Available Endpoints
 1. **Health Check**:
@@ -766,12 +825,12 @@ DB_HOST=postgres  # or localhost for local development
 DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres
-DB_NAME=jeki
+DB_NAME=maxwash
 
 # PostgreSQL Docker Configuration (optional, has defaults)
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
-POSTGRES_DB=jeki
+POSTGRES_DB=maxwash
 ```
 
 ### Optional Variables
@@ -798,7 +857,7 @@ RATE_WINDOW=1m
 When using Docker, the following environment variables are used with their default values:
 - `DB_USER`: postgres (default)
 - `DB_PASSWORD`: postgres (default)
-- `DB_NAME`: jeki (default)
+- `DB_NAME`: maxwash (default)
 
 These variables are read from your `.env.{environment}` file (e.g., `.env.dev`). The same file is used by both the application and PostgreSQL service.
 
@@ -815,13 +874,13 @@ DB_HOST=postgres  # or localhost for local development
 DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres
-DB_NAME=jeki
+DB_NAME=maxwash
 ```
 
 Note: If these variables are not set in your `.env` file, the default values will be used:
 - DB_USER=postgres
 - DB_PASSWORD=postgres
-- DB_NAME=jeki
+- DB_NAME=maxwash
 
 ### Authentication Endpoints
 
@@ -832,13 +891,13 @@ POST /v1/auth/google?code={authorization_code}
 
 #### Refresh Token
 ```http
-POST /v1/auth/refresh?refresh_token={refresh_token}
+POST /v1/auth/refresh?refreshToken={refreshToken}
 ```
 
 #### Logout
 ```http
 POST /v1/auth/logout
-Authorization: Bearer {access_token}
+Authorization: Bearer {accessToken}
 ```
 
 For detailed API documentation, see:

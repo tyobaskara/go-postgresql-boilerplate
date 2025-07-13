@@ -3,15 +3,15 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	v1 "github.com/tyobaskara/jeki-backend/internal/handler/v1"
-	"github.com/tyobaskara/jeki-backend/internal/modules/auth/config"
-	authhandler "github.com/tyobaskara/jeki-backend/internal/modules/auth/handler"
-	"github.com/tyobaskara/jeki-backend/internal/modules/auth/middleware"
-	authrepo "github.com/tyobaskara/jeki-backend/internal/modules/auth/repository"
-	"github.com/tyobaskara/jeki-backend/internal/modules/auth/usecase"
-	userhandler "github.com/tyobaskara/jeki-backend/internal/modules/user/handler"
-	userrepo "github.com/tyobaskara/jeki-backend/internal/modules/user/repository"
-	userusecase "github.com/tyobaskara/jeki-backend/internal/modules/user/usecase"
+	v1 "github.com/tyobaskara/maxwash-backend/internal/handler/v1"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/auth/config"
+	authhandler "github.com/tyobaskara/maxwash-backend/internal/modules/auth/handler"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/auth/middleware"
+	authrepo "github.com/tyobaskara/maxwash-backend/internal/modules/auth/repository"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/auth/usecase"
+	userhandler "github.com/tyobaskara/maxwash-backend/internal/modules/user/handler"
+	userrepo "github.com/tyobaskara/maxwash-backend/internal/modules/user/repository"
+	userusecase "github.com/tyobaskara/maxwash-backend/internal/modules/user/usecase"
 	"gorm.io/gorm"
 )
 

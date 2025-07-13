@@ -66,7 +66,7 @@ func LoadConfig(env string) (*Config, error) {
 			DBPort:             getEnv("DB_PORT", "5432"),
 			DBUser:             getEnv("DB_USER", "postgres"),
 			DBPassword:         getEnv("DB_PASSWORD", ""),
-			DBName:             getEnv("DB_NAME", "jeki"),
+			DBName:             getEnv("DB_NAME", "maxwash"),
 			GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 			GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
 			JWTSecret:          getEnv("JWT_SECRET", ""),

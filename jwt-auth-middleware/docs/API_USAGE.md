@@ -1,6 +1,6 @@
 # API Usage Guide
 
-This guide provides practical examples and best practices for using the Jeki Backend API.
+This guide provides practical examples and best practices for using the maxwash Backend API.
 
 ## Getting Started
 
@@ -16,7 +16,7 @@ http://localhost:8080
 ### Authentication
 Protected endpoints require a Bearer token in the Authorization header:
 ```
-Authorization: Bearer your_jwt_access_token
+Authorization: Bearer your_jwt_accessToken
 ```
 
 ## Authentication Examples
@@ -37,11 +37,11 @@ curl -X POST http://localhost:8080/v1/auth/signup \
 **Response:**
 ```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "Bearer",
-  "expires_in": 3600,
-  "refresh_token": "abc123def456ghi789...",
-  "expires_at": "2024-01-01T12:00:00Z"
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "refreshToken": "abc123def456ghi789...",
+  "expiresAt": "2024-01-01T12:00:00Z"
 }
 ```
 
@@ -74,16 +74,16 @@ curl -X POST http://localhost:8080/v1/auth/google \
 
 **Request:**
 ```bash
-curl -X POST "http://localhost:8080/v1/auth/refresh?refresh_token=your_refresh_token_here"
+curl -X POST "http://localhost:8080/v1/auth/refresh?refreshToken=your_refreshToken_here"
 ```
 
 **Response:**
 ```json
 {
-  "access_token": "new_access_token_here...",
-  "token_type": "Bearer",
-  "expires_in": 3600,
-  "expires_at": "2024-01-01T12:00:00Z"
+  "accessToken": "new_accessToken_here...",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "expiresAt": "2024-01-01T12:00:00Z"
 }
 ```
 
@@ -92,7 +92,7 @@ curl -X POST "http://localhost:8080/v1/auth/refresh?refresh_token=your_refresh_t
 **Request:**
 ```bash
 curl -X POST http://localhost:8080/v1/auth/logout \
-  -H "Authorization: Bearer your_access_token_here"
+  -H "Authorization: Bearer your_accessToken_here"
 ```
 
 **Response:**
@@ -108,18 +108,21 @@ curl -X POST http://localhost:8080/v1/auth/logout \
 
 **Request:**
 ```bash
-curl -X GET "http://localhost:8080/v1/users?page=1&limit=10"
+curl -X GET "http://localhost:8080/v1/users?page=1&limit=10" \
+  -H "Authorization: Bearer your_accessToken_here"
 ```
 
 **Response:**
 ```json
 [
   {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "id": "550e8400-e29b-41d4-a716-446655440000",
     "email": "john.doe@example.com",
     "name": "John Doe",
-    "created_at": "2024-01-01T10:00:00Z",
-    "updated_at": "2024-01-01T10:00:00Z"
+    "lastLoginAt": "2024-01-01T10:00:00Z",
+    "lastLogoutAt": "2024-01-01T09:00:00Z",
+    "createdAt": "2024-01-01T08:00:00Z",
+    "updatedAt": "2024-01-01T10:00:00Z"
   }
 ]
 ```
@@ -128,17 +131,20 @@ curl -X GET "http://localhost:8080/v1/users?page=1&limit=10"
 
 **Request:**
 ```bash
-curl -X GET http://localhost:8080/v1/users/123e4567-e89b-12d3-a456-426614174000
+curl -X GET "http://localhost:8080/v1/users/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Authorization: Bearer your_accessToken_here"
 ```
 
 **Response:**
 ```json
 {
-  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "email": "john.doe@example.com",
   "name": "John Doe",
-  "created_at": "2024-01-01T10:00:00Z",
-  "updated_at": "2024-01-01T10:00:00Z"
+  "lastLoginAt": "2024-01-01T10:00:00Z",
+  "lastLogoutAt": "2024-01-01T09:00:00Z",
+  "createdAt": "2024-01-01T08:00:00Z",
+  "updatedAt": "2024-01-01T10:00:00Z"
 }
 ```
 
@@ -146,7 +152,8 @@ curl -X GET http://localhost:8080/v1/users/123e4567-e89b-12d3-a456-426614174000
 
 **Request:**
 ```bash
-curl -X PUT http://localhost:8080/v1/users/123e4567-e89b-12d3-a456-426614174000 \
+curl -X PUT "http://localhost:8080/v1/users/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Authorization: Bearer your_accessToken_here" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "John Smith",
@@ -154,253 +161,217 @@ curl -X PUT http://localhost:8080/v1/users/123e4567-e89b-12d3-a456-426614174000 
   }'
 ```
 
+**Response:** Updated user object
+
+### 4. Delete User
+
+**Request:**
+```bash
+curl -X DELETE "http://localhost:8080/v1/users/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Authorization: Bearer your_accessToken_here"
+```
+
 **Response:**
 ```json
 {
-  "id": "123e4567-e89b-12d3-a456-426614174000",
-  "email": "john.smith@example.com",
-  "name": "John Smith",
-  "created_at": "2024-01-01T10:00:00Z",
-  "updated_at": "2024-01-01T11:00:00Z"
+  "message": "User deleted successfully"
 }
-```
-
-### 4. Update User Password
-
-**Request:**
-```bash
-curl -X PUT http://localhost:8080/v1/users/123e4567-e89b-12d3-a456-426614174000 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "password": "newsecurepassword456"
-  }'
-```
-
-### 5. Delete User
-
-**Request:**
-```bash
-curl -X DELETE http://localhost:8080/v1/users/123e4567-e89b-12d3-a456-426614174000
-```
-
-**Response:** `204 No Content`
-
-## JavaScript/Node.js Examples
-
-### Using Fetch API
-
-```javascript
-// User Registration
-async function registerUser(email, name, password) {
-  const response = await fetch('http://localhost:8080/v1/auth/signup', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      email,
-      name,
-      password
-    })
-  });
-  
-  if (!response.ok) {
-    throw new Error('Registration failed');
-  }
-  
-  return await response.json();
-}
-
-// User Login
-async function loginUser(email, password) {
-  const response = await fetch('http://localhost:8080/v1/auth/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      email,
-      password
-    })
-  });
-  
-  if (!response.ok) {
-    throw new Error('Login failed');
-  }
-  
-  return await response.json();
-}
-
-// Get User Profile (Protected Route)
-async function getUserProfile(userId, accessToken) {
-  const response = await fetch(`http://localhost:8080/v1/users/${userId}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to get user profile');
-  }
-  
-  return await response.json();
-}
-
-// Logout
-async function logoutUser(accessToken) {
-  const response = await fetch('http://localhost:8080/v1/auth/logout', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
-  });
-  
-  if (!response.ok) {
-    throw new Error('Logout failed');
-  }
-  
-  return await response.json();
-}
-```
-
-### Using Axios
-
-```javascript
-import axios from 'axios';
-
-// Configure base URL
-const api = axios.create({
-  baseURL: 'http://localhost:8080'
-});
-
-// Add auth interceptor
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// User registration
-const registerUser = async (userData) => {
-  try {
-    const response = await api.post('/v1/auth/signup', userData);
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.error || 'Registration failed');
-  }
-};
-
-// User login
-const loginUser = async (credentials) => {
-  try {
-    const response = await api.post('/v1/auth/login', credentials);
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.error || 'Login failed');
-  }
-};
-
-// Get all users
-const getUsers = async (page = 1, limit = 10) => {
-  try {
-    const response = await api.get(`/v1/users?page=${page}&limit=${limit}`);
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.error || 'Failed to get users');
-  }
-};
 ```
 
 ## Error Handling
 
 ### Common Error Responses
 
+**400 Bad Request:**
 ```json
-// 400 Bad Request
 {
   "error": "Invalid request body: email is required"
 }
+```
 
-// 401 Unauthorized
+**401 Unauthorized:**
+```json
 {
   "error": "Invalid credentials"
 }
+```
 
-// 404 Not Found
+**404 Not Found:**
+```json
 {
   "error": "User not found"
 }
+```
 
-// 409 Conflict
+**409 Conflict:**
+```json
 {
-  "error": "user with this email already exists"
+  "error": "User with this email already exists"
 }
+```
 
-// 500 Internal Server Error
+**500 Internal Server Error:**
+```json
 {
   "error": "Internal server error"
 }
 ```
 
-### Error Handling Best Practices
+## Best Practices
 
-1. **Always check response status codes**
-2. **Parse error messages from response body**
-3. **Handle token expiration gracefully**
-4. **Implement retry logic for network errors**
-5. **Store tokens securely (localStorage, secure cookies, etc.)**
+### 1. Authentication
+- Always include the Bearer token in the Authorization header for protected endpoints
+- Store tokens securely and refresh them before expiration
+- Handle 401 responses by redirecting to login
 
-## Security Best Practices
+### 2. Error Handling
+- Always check the HTTP status code
+- Parse error messages from the response body
+- Implement retry logic for transient errors
 
-1. **Token Storage**
-   - Store access tokens in memory when possible
-   - Use secure cookies for refresh tokens
-   - Never store tokens in localStorage for production apps
+### 3. Rate Limiting
+- Respect rate limits (if implemented)
+- Implement exponential backoff for retries
+- Cache responses when appropriate
 
-2. **Token Refresh**
-   - Implement automatic token refresh before expiration
-   - Handle refresh token expiration gracefully
-   - Redirect to login when refresh fails
+### 4. Data Validation
+- Validate input data on the client side
+- Handle validation errors gracefully
+- Provide clear error messages to users
 
-3. **Input Validation**
-   - Validate all user inputs on client side
-   - Sanitize data before sending to API
-   - Use HTTPS in production
+### 5. Security
+- Never store passwords in plain text
+- Use HTTPS in production
+- Validate tokens on the server side
+- Implement proper session management
 
-4. **Error Handling**
-   - Don't expose sensitive information in error messages
-   - Log errors appropriately
-   - Implement proper error boundaries
+## SDK Examples
 
-## Rate Limiting
+### JavaScript/TypeScript
 
-The API implements rate limiting to prevent abuse:
-- **Authentication endpoints**: 5 requests per minute per IP
-- **User management endpoints**: 100 requests per minute per user
-- **General endpoints**: 1000 requests per minute per IP
+```typescript
+class MaxwashAPI {
+  private baseURL: string;
+  private accessToken: string | null = null;
+
+  constructor(baseURL: string) {
+    this.baseURL = baseURL;
+  }
+
+  async login(email: string, password: string) {
+    const response = await fetch(`${this.baseURL}/v1/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Login failed');
+    }
+
+    const data = await response.json();
+    this.accessToken = data.accessToken;
+    return data;
+  }
+
+  async getUsers(page = 1, limit = 10) {
+    if (!this.accessToken) {
+      throw new Error('Not authenticated');
+    }
+
+    const response = await fetch(
+      `${this.baseURL}/v1/users?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch users');
+    }
+
+    return response.json();
+  }
+}
+```
+
+### Python
+
+```python
+import requests
+from typing import Optional, Dict, Any
+
+class MaxwashAPI:
+    def __init__(self, base_url: str):
+        self.base_url = base_url
+        self.accessToken: Optional[str] = None
+
+    def login(self, email: str, password: str) -> Dict[str, Any]:
+        response = requests.post(
+            f"{self.base_url}/v1/auth/login",
+            json={"email": email, "password": password}
+        )
+        response.raise_for_status()
+        
+        data = response.json()
+        self.accessToken = data["accessToken"]
+        return data
+
+    def get_users(self, page: int = 1, limit: int = 10) -> Dict[str, Any]:
+        if not self.accessToken:
+            raise ValueError("Not authenticated")
+
+        response = requests.get(
+            f"{self.base_url}/v1/users",
+            params={"page": page, "limit": limit},
+            headers={"Authorization": f"Bearer {self.accessToken}"}
+        )
+        response.raise_for_status()
+        
+        return response.json()
+```
 
 ## Testing
 
-### Test Credentials
+### Using curl for Testing
 
-For testing purposes, you can use these credentials:
-- **Email**: `test@example.com`
-- **Password**: `testpassword123`
+```bash
+# Test health endpoint
+curl http://localhost:8080/ping
 
-### Test Environment
+# Test authentication
+curl -X POST http://localhost:8080/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","name":"Test User","password":"password123"}'
 
-The API includes a test environment with:
-- In-memory database for testing
-- Mock authentication for development
-- Sample data generation
-- Health check endpoint at `/ping`
+# Test protected endpoint
+curl -X GET http://localhost:8080/v1/users \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
 
-## Support
+### Using Postman
 
-For API support and questions:
-- Check the interactive documentation at `/swagger/index.html`
-- Review the authentication flow documentation
-- Create an issue in the repository 
+1. Import the API collection
+2. Set the base URL variable
+3. Use the authentication flow to get tokens
+4. Test protected endpoints with the token
+
+## Troubleshooting
+
+### Common Issues
+
+1. **401 Unauthorized**: Check if the token is valid and not expired
+2. **400 Bad Request**: Validate request body format and required fields
+3. **500 Internal Server Error**: Check server logs for details
+4. **CORS Issues**: Ensure proper CORS configuration for web clients
+
+### Debug Tips
+
+1. Use verbose curl output: `curl -v`
+2. Check response headers for additional information
+3. Log request/response data for debugging
+4. Use browser developer tools for web applications 

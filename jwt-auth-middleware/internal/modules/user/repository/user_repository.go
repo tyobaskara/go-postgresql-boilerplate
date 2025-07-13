@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/tyobaskara/jeki-backend/internal/modules/user/domain"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/user/domain"
 	"gorm.io/gorm"
 )
 
@@ -52,6 +52,18 @@ func (r *userRepository) FindByEmail(email string) (*domain.User, error) {
 func (r *userRepository) Update(user *domain.User) error {
 	user.UpdatedAt = time.Now()
 	return r.db.Save(user).Error
+}
+
+func (r *userRepository) UpdateLastLoginAt(id uuid.UUID, loginTime time.Time) error {
+	return r.db.Model(&domain.User{}).
+		Where("id = ?", id).
+		Update("last_login_at", loginTime).Error
+}
+
+func (r *userRepository) UpdateLastLogoutAt(id uuid.UUID, logoutTime time.Time) error {
+	return r.db.Model(&domain.User{}).
+		Where("id = ?", id).
+		Update("last_logout_at", logoutTime).Error
 }
 
 func (r *userRepository) Delete(id uuid.UUID) error {

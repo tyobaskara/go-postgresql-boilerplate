@@ -1,6 +1,6 @@
 # Docker Documentation
 
-This document provides comprehensive information about the Docker setup for the Jeki Backend project.
+This document provides comprehensive information about the Docker setup for the maxwash Backend project.
 
 ## Overview
 
@@ -41,7 +41,7 @@ The `docker-compose.yml` file defines three services:
 - Environment variables:
   - `POSTGRES_USER` (default: postgres)
   - `POSTGRES_PASSWORD` (default: postgres)
-  - `POSTGRES_DB` (default: jeki)
+  - `POSTGRES_DB` (default: maxwash)
 - Includes health checks
 - Initializes database using `scripts/init.sql`
 
@@ -158,7 +158,7 @@ DB_HOST=postgres  # or localhost for local development
 DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres
-DB_NAME=jeki
+DB_NAME=maxwash
 ```
 
 ### Environment File Priority
@@ -173,7 +173,7 @@ The application reads environment variables in the following order:
 When using Docker, the following environment variables are used with their default values:
 - `DB_USER`: postgres (default)
 - `DB_PASSWORD`: postgres (default)
-- `DB_NAME`: jeki (default)
+- `DB_NAME`: maxwash (default)
 
 These variables are read from your `.env.{environment}` file (e.g., `.env.dev`). The same file is used by both the application and PostgreSQL service.
 
@@ -184,7 +184,7 @@ These variables are read from your `.env.{environment}` file (e.g., `.env.dev`).
 
 ## Networks
 
-All services are connected through the `jeki-network` bridge network.
+All services are connected through the `maxwash-network` bridge network.
 
 ## Health Checks
 

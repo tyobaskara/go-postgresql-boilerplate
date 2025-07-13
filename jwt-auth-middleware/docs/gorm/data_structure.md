@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     password VARCHAR(255),
+    last_login_at TIMESTAMP WITH TIME ZONE,
+    last_logout_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -46,12 +48,14 @@ CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
 
 ```go
 type User struct {
-    ID        uuid.UUID `json:"id"`
-    Email     string    `json:"email"`
-    Name      string    `json:"name"`
-    Password  string    `json:"-"`          // Hashed password, not exposed in JSON
-    CreatedAt time.Time `json:"created_at"`
-    UpdatedAt time.Time `json:"updated_at"`
+    ID           uuid.UUID `json:"id"`
+    Email        string    `json:"email"`
+    Name         string    `json:"name"`
+    Password     string    `json:"-"`          // Hashed password, not exposed in JSON
+    LastLoginAt  time.Time `json:"lastLoginAt"`
+    LastLogoutAt time.Time `json:"lastLogoutAt"`
+    CreatedAt    time.Time `json:"createdAt"`
+    UpdatedAt    time.Time `json:"updatedAt"`
 }
 ```
 
@@ -60,11 +64,11 @@ type User struct {
 ```go
 type Session struct {
     ID           uuid.UUID `json:"id"`
-    UserID       uuid.UUID `json:"user_id"`
-    RefreshToken string    `json:"refresh_token"`
-    ExpiresAt    time.Time `json:"expires_at"`
-    CreatedAt    time.Time `json:"created_at"`
-    UpdatedAt    time.Time `json:"updated_at"`
+    UserID       uuid.UUID `json:"userId"`
+    RefreshToken string    `json:"refreshToken"`
+    ExpiresAt    time.Time `json:"expiresAt"`
+    CreatedAt    time.Time `json:"createdAt"`
+    UpdatedAt    time.Time `json:"updatedAt"`
 }
 ```
 
@@ -86,11 +90,11 @@ type LoginRequest struct {
 
 // AuthToken represents the JWT token structure
 type AuthToken struct {
-    AccessToken  string    `json:"access_token"`
-    TokenType    string    `json:"token_type"`
-    ExpiresIn    int64     `json:"expires_in"`
-    RefreshToken string    `json:"refresh_token,omitempty"`
-    ExpiresAt    time.Time `json:"expires_at"`
+    AccessToken  string    `json:"accessToken"`
+    TokenType    string    `json:"tokenType"`
+    ExpiresIn    int64     `json:"expiresIn"`
+    RefreshToken string    `json:"refreshToken,omitempty"`
+    ExpiresAt    time.Time `json:"expiresAt"`
 }
 ```
 
@@ -134,7 +138,7 @@ GORM recognizes special field names and handles them automatically:
 ### JSON Tags
 
 - `json:"-"`: Field is excluded from JSON serialization (used for password)
-- `json:"field_name"`: Custom JSON field name
+- `json:"fieldName"`: Custom JSON field name in camelCase
 - `binding:"required,email"`: Gin validation tags
 
 ## Repository Implementation
@@ -248,24 +252,18 @@ hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.Defa
 if err != nil {
     return fmt.Errorf("failed to hash password: %w", err)
 }
-user.Password = string(hashedPassword)
 
 // Verify password during login
-if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-    return errors.New("invalid password")
+err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+if err != nil {
+    return nil, errors.New("invalid password")
 }
 ```
-
-### Password Validation
-
-- **Minimum Length**: 6 characters
-- **Required**: For password-based authentication
-- **Optional**: For Google OAuth users (can be empty)
 
 ## Best Practices
 
 1. **Struct Tags**
-   - Use `json` tags for API serialization
+   - Use `json` tags for API serialization in camelCase
    - Use `json:"-"` to exclude sensitive fields from JSON
    - Use `binding` tags for input validation
    - Use `gorm` tags for custom GORM behavior if needed

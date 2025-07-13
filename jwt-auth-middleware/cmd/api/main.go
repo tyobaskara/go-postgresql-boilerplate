@@ -5,16 +5,16 @@ import (
 	"log"
 	"os"
 
-	"github.com/tyobaskara/jeki-backend/internal/config"
-	v1 "github.com/tyobaskara/jeki-backend/internal/handler/v1"
-	authconfig "github.com/tyobaskara/jeki-backend/internal/modules/auth/config"
-	"github.com/tyobaskara/jeki-backend/internal/modules/auth/handler"
-	"github.com/tyobaskara/jeki-backend/internal/modules/auth/middleware"
-	authrepo "github.com/tyobaskara/jeki-backend/internal/modules/auth/repository"
-	"github.com/tyobaskara/jeki-backend/internal/modules/auth/usecase"
-	userhandler "github.com/tyobaskara/jeki-backend/internal/modules/user/handler"
-	userrepo "github.com/tyobaskara/jeki-backend/internal/modules/user/repository"
-	userusecase "github.com/tyobaskara/jeki-backend/internal/modules/user/usecase"
+	"github.com/tyobaskara/maxwash-backend/internal/config"
+	v1 "github.com/tyobaskara/maxwash-backend/internal/handler/v1"
+	authconfig "github.com/tyobaskara/maxwash-backend/internal/modules/auth/config"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/auth/handler"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/auth/middleware"
+	authrepo "github.com/tyobaskara/maxwash-backend/internal/modules/auth/repository"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/auth/usecase"
+	userhandler "github.com/tyobaskara/maxwash-backend/internal/modules/user/handler"
+	userrepo "github.com/tyobaskara/maxwash-backend/internal/modules/user/repository"
+	userusecase "github.com/tyobaskara/maxwash-backend/internal/modules/user/usecase"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -64,7 +64,7 @@ func main() {
 		},
 	)
 	authHandler := handler.NewAuthHandler(authUsecase)
-	authMiddleware := middleware.NewAuthMiddleware(authCfg.JWTSecret)
+	authMiddleware := middleware.NewAuthMiddleware(authCfg.JWTSecret, userRepo)
 
 	// User module manual wiring
 	userUsecase := userusecase.NewUserUsecase(userRepo)

@@ -14,7 +14,7 @@ services:
     depends_on:
       - postgres
     networks:
-      - jeki-network
+      - maxwash-network
 
   postgres:
     image: postgres:16-alpine
@@ -23,14 +23,14 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-      POSTGRES_DB: ${DB_NAME:-jeki}
+      POSTGRES_DB: ${DB_NAME:-maxwash}
     env_file:
       - .env.${ENV:-dev}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - jeki-network
+      - maxwash-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -46,10 +46,10 @@ services:
     volumes:
       - ./docs/swagger:/swagger
     networks:
-      - jeki-network
+      - maxwash-network
 
 networks:
-  jeki-network:
+  maxwash-network:
     driver: bridge
 
 volumes:

@@ -3,9 +3,9 @@ package v1
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/tyobaskara/jeki-backend/internal/modules/auth/handler"
-	"github.com/tyobaskara/jeki-backend/internal/modules/auth/middleware"
-	userhandler "github.com/tyobaskara/jeki-backend/internal/modules/user/handler"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/auth/handler"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/auth/middleware"
+	userhandler "github.com/tyobaskara/maxwash-backend/internal/modules/user/handler"
 )
 
 // SetupRouter configures the router with all routes

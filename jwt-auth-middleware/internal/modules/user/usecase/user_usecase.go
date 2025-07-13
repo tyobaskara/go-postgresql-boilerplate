@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/tyobaskara/jeki-backend/internal/modules/user/domain"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/user/domain"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,6 +20,10 @@ func NewUserUsecase(userRepo domain.UserRepository) domain.UserUsecase {
 	}
 }
 
+func (u *userUsecase) CreateUser(user *domain.User) error {
+	return u.userRepo.Create(user)
+}
+
 func (u *userUsecase) GetUserByID(id uuid.UUID) (*domain.User, error) {
 	return u.userRepo.FindByID(id)
 }
@@ -29,6 +33,34 @@ func (u *userUsecase) GetUserByEmail(email string) (*domain.User, error) {
 }
 
 func (u *userUsecase) UpdateUser(user *domain.User) error {
+	return u.userRepo.Update(user)
+}
+
+func (u *userUsecase) UpdateLastLoginAt(id uuid.UUID, loginTime time.Time) error {
+	user, err := u.userRepo.FindByID(id)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return errors.New("user not found")
+	}
+	
+	user.LastLoginAt = loginTime
+	user.UpdatedAt = time.Now()
+	return u.userRepo.Update(user)
+}
+
+func (u *userUsecase) UpdateLastLogoutAt(id uuid.UUID, logoutTime time.Time) error {
+	user, err := u.userRepo.FindByID(id)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return errors.New("user not found")
+	}
+	
+	user.LastLogoutAt = logoutTime
+	user.UpdatedAt = time.Now()
 	return u.userRepo.Update(user)
 }
 

@@ -48,7 +48,7 @@ You can customize the database connection by overriding the default values:
 # Example with custom database configuration
 DB_HOST=localhost \
 DB_PORT=5432 \
-DB_NAME=jeki \
+DB_NAME=maxwash \
 DB_USER=postgres \
 DB_PASSWORD=postgres \
 DB_SSL_MODE=disable \
@@ -62,15 +62,15 @@ If you prefer to run migrations manually, you can use the migrate CLI directly:
 ```bash
 # Local database
 migrate -path internal/modules/auth/repository/migrations \
-        -database "postgres://postgres:postgres@localhost:5432/jeki?sslmode=disable" \
+        -database "postgres://postgres:postgres@localhost:5432/maxwash?sslmode=disable" \
         up
 
 # Docker database
-docker run --network jeki-network \
+docker run --network maxwash-network \
     -v $(pwd)/internal/modules/auth/repository/migrations:/migrations \
     migrate/migrate \
     -path /migrations \
-    -database "postgres://postgres:postgres@db:5432/jeki?sslmode=disable" \
+    -database "postgres://postgres:postgres@db:5432/maxwash?sslmode=disable" \
     up
 ```
 
@@ -102,28 +102,28 @@ POST /v1/auth/google?code={authorization_code}
 Response:
 ```json
 {
-    "access_token": "eyJhbGciOiJIUzI1NiIs...",
-    "token_type": "Bearer",
-    "expires_in": 900,
-    "refresh_token": "refresh_token_here",
-    "expires_at": "2024-03-21T12:00:00Z"
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "tokenType": "Bearer",
+    "expiresIn": 900,
+    "refreshToken": "refreshToken_here",
+    "expiresAt": "2024-03-21T12:00:00Z"
 }
 ```
 
 ### Refresh Token
 
 ```http
-POST /v1/auth/refresh?refresh_token={refresh_token}
+POST /v1/auth/refresh?refreshToken={refreshToken}
 ```
 
 Response:
 ```json
 {
-    "access_token": "eyJhbGciOiJIUzI1NiIs...",
-    "token_type": "Bearer",
-    "expires_in": 900,
-    "refresh_token": "refresh_token_here",
-    "expires_at": "2024-03-21T12:00:00Z"
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "tokenType": "Bearer",
+    "expiresIn": 900,
+    "refreshToken": "refreshToken_here",
+    "expiresAt": "2024-03-21T12:00:00Z"
 }
 ```
 
@@ -131,7 +131,7 @@ Response:
 
 ```http
 POST /v1/auth/logout
-Authorization: Bearer {access_token}
+Authorization: Bearer {accessToken}
 ```
 
 Response:

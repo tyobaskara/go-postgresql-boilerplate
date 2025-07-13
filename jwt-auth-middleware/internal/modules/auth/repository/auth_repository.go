@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/tyobaskara/jeki-backend/internal/modules/auth/domain"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/auth/domain"
 	"gorm.io/gorm"
 )
 
@@ -27,6 +27,19 @@ func (r *authRepository) GetSessionByRefreshToken(refreshToken string) (*domain.
 		return nil, err
 	}
 	return &session, nil
+}
+
+func (r *authRepository) GetUserSessions(userID uuid.UUID) ([]*domain.Session, error) {
+	var sessions []*domain.Session
+	err := r.db.Where("user_id = ? AND expires_at > ?", userID, time.Now()).Find(&sessions).Error
+	if err != nil {
+		return nil, err
+	}
+	return sessions, nil
+}
+
+func (r *authRepository) UpdateSession(session *domain.Session) error {
+	return r.db.Save(session).Error
 }
 
 func (r *authRepository) DeleteSession(id uuid.UUID) error {

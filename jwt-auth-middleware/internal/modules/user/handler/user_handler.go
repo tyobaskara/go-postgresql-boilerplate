@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/tyobaskara/jeki-backend/internal/modules/user/domain"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/user/domain"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -124,7 +124,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
 
 // GetAllUsers handles getting all users

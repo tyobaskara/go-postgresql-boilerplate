@@ -68,18 +68,18 @@ db-setup:
 	@echo "Creating postgres user if not exists..."
 	@psql -c "CREATE USER postgres WITH PASSWORD 'postgres' SUPERUSER;" postgres || true
 	@echo "Creating database..."
-	@psql -U postgres -c "CREATE DATABASE jeki;" || true
+	@psql -U postgres -c "CREATE DATABASE maxwash;" || true
 	@echo "Granting privileges..."
-	@psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE jeki TO postgres;"
+	@psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE maxwash TO postgres;"
 	@echo "Running initialization scripts..."
-	@psql -U postgres jeki -f scripts/init.sql
+	@psql -U postgres maxwash -f scripts/init.sql
 	@echo "Database setup completed successfully!"
 	@echo "\nTo connect to the database, use:"
-	@echo "psql -U postgres jeki"
+	@echo "psql -U postgres maxwash"
 	@echo "\nOr to connect as postgres user first:"
 	@echo "psql postgres"
 	@echo "Then in psql, you can use:"
-	@echo "\\c jeki    # to connect to jeki database"
+	@echo "\\c maxwash    # to connect to maxwash database"
 	@echo "\\dt        # to list tables"
 	@echo "\\q         # to quit psql"
 
@@ -87,19 +87,19 @@ db-setup:
 db-reset:
 	@echo "Resetting database..."
 	@echo "Terminating all connections to database..."
-	@psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'jeki';" || true
+	@psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'maxwash';" || true
 	@echo "Dropping database..."
-	@psql -U postgres -c "DROP DATABASE IF EXISTS jeki;"
+	@psql -U postgres -c "DROP DATABASE IF EXISTS maxwash;"
 	@echo "Setting up fresh database..."
 	@make db-setup
 
 # Reset database (with Docker)
 db-reset-docker:
 	@echo "Resetting database in Docker..."
-	@docker-compose exec postgres psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'jeki';" || true
-	@docker-compose exec postgres psql -U postgres -c "DROP DATABASE IF EXISTS jeki;"
-	@docker-compose exec postgres psql -U postgres -c "CREATE DATABASE jeki;"
-	@docker-compose exec postgres psql -U postgres jeki -f /docker-entrypoint-initdb.d/init.sql
+	@docker-compose exec postgres psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'maxwash';" || true
+	@docker-compose exec postgres psql -U postgres -c "DROP DATABASE IF EXISTS maxwash;"
+	@docker-compose exec postgres psql -U postgres -c "CREATE DATABASE maxwash;"
+	@docker-compose exec postgres psql -U postgres maxwash -f /docker-entrypoint-initdb.d/init.sql
 	@echo "Database has been reset successfully!"
 
 # Generate Swagger docs
@@ -119,29 +119,29 @@ go-mod-tidy:
 # Setup database (with Docker)
 db-setup-docker:
 	@echo "Setting up database in Docker..."
-	@docker-compose exec postgres psql -U postgres -c "CREATE DATABASE jeki;" || true
-	@docker-compose exec postgres psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE jeki TO postgres;"
-	@docker-compose exec postgres psql -U postgres jeki -f /docker-entrypoint-initdb.d/init.sql
+	@docker-compose exec postgres psql -U postgres -c "CREATE DATABASE maxwash;" || true
+	@docker-compose exec postgres psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE maxwash TO postgres;"
+	@docker-compose exec postgres psql -U postgres maxwash -f /docker-entrypoint-initdb.d/init.sql
 	@echo "Database setup completed successfully!"
 	@echo "\nTo connect to the database in Docker, use:"
-	@echo "docker-compose exec postgres psql -U postgres jeki"
+	@echo "docker-compose exec postgres psql -U postgres maxwash"
 	@echo "\nOr to connect to psql first:"
 	@echo "docker-compose exec postgres psql -U postgres"
 	@echo "Then in psql, you can use:"
-	@echo "\\c jeki    # to connect to jeki database"
+	@echo "\\c maxwash    # to connect to maxwash database"
 	@echo "\\dt        # to list tables"
 	@echo "\\q         # to quit psql"
 
 # Database configuration
 DB_HOST ?= localhost
 DB_PORT ?= 5432
-DB_NAME ?= jeki
+DB_NAME ?= maxwash
 DB_USER ?= postgres
 DB_PASSWORD ?= postgres
 DB_SSL_MODE ?= disable
 
 # Docker configuration
-DOCKER_NETWORK ?= jeki-backend_jeki-network
+DOCKER_NETWORK ?= maxwash-backend_maxwash-network
 MIGRATIONS_PATH ?= migrations
 
 # Connection strings
@@ -209,8 +209,8 @@ help:
 	@echo "You can override default values:"
 	@echo "  DB_HOST=localhost"
 	@echo "  DB_PORT=5432"
-	@echo "  DB_NAME=jeki"
+	@echo "  DB_NAME=maxwash"
 	@echo "  DB_USER=postgres"
 	@echo "  DB_PASSWORD=postgres"
 	@echo "  DB_SSL_MODE=disable"
-	@echo "  DOCKER_NETWORK=jeki-network"
+	@echo "  DOCKER_NETWORK=maxwash-network"

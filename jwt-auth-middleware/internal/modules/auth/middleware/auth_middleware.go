@@ -8,15 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/tyobaskara/maxwash-backend/internal/modules/user/domain"
 )
 
 type AuthMiddleware struct {
 	jwtSecret []byte
+	userRepo  domain.UserRepository
 }
 
-func NewAuthMiddleware(jwtSecret string) *AuthMiddleware {
+func NewAuthMiddleware(jwtSecret string, userRepo domain.UserRepository) *AuthMiddleware {
 	return &AuthMiddleware{
 		jwtSecret: []byte(jwtSecret),
+		userRepo:  userRepo,
 	}
 }
 
@@ -38,8 +41,10 @@ func (m *AuthMiddleware) AuthRequired() gin.HandlerFunc {
 			return
 		}
 
+		tokenString := parts[1]
+
 		// Parse and validate the token
-		token, err := jwt.Parse(parts[1], func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrSignatureInvalid
 			}
@@ -70,7 +75,28 @@ func (m *AuthMiddleware) AuthRequired() gin.HandlerFunc {
 					c.Abort()
 					return
 				}
-				c.Set("user_id", userID)
+
+				// Get user from database to check logout timestamp
+				user, err := m.userRepo.FindByID(userID)
+				if err != nil {
+					c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+					c.Abort()
+					return
+				}
+
+				// Check if token was issued before last logout (IMMEDIATE INVALIDATION)
+				if !user.LastLogoutAt.IsZero() {
+					if iat, ok := claims["iat"].(float64); ok {
+						tokenIssuedAt := time.Unix(int64(iat), 0)
+						if user.LastLogoutAt.After(tokenIssuedAt) {
+							c.JSON(http.StatusUnauthorized, gin.H{"error": "Token invalidated by logout"})
+							c.Abort()
+							return
+						}
+					}
+				}
+
+				c.Set("userId", userID)
 				c.Next()
 				return
 			}
