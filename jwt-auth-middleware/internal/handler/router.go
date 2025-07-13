@@ -37,7 +37,7 @@ func SetupRouter(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		},
 	)
 	authHandler := authhandler.NewAuthHandler(authUsecase)
-	authMiddleware := middleware.NewAuthMiddleware(cfg.JWTSecret)
+	authMiddleware := middleware.NewAuthMiddleware(cfg.JWTSecret, userRepo)
 
 	// User module manual wiring
 	userUsecase := userusecase.NewUserUsecase(userRepo)
